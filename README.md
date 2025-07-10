@@ -1,7 +1,7 @@
 # AI Mock Interview Platform
 
 An AI-powered mock interview platform that simulates real-time voice-based interviews using Vapi voice agents. Built with Next.js, ShadCN UI, Firebase, Tailwind CSS, and TypeScript.
-
+v2
 ## 🚀 Features
 
 - 🎤 Real-time voice interview with AI agent (Vapi)

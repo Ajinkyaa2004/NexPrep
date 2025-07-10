@@ -41,7 +41,6 @@ export async function POST(request: Request) {
         await db.collection("interviews").add(interview);
 
         return Response.json({ success: true }, { status: 200 });
-
     }
     catch(error){
         console.error(error);
@@ -49,5 +48,15 @@ export async function POST(request: Request) {
         return Response.json({ success: false, error }, { status: 500 });
 
     }
-
 }
+
+
+
+// {
+//     "type":"mixed",
+//     "role":"frontend",
+//     "level":"senior",
+//     "techstack":"next.js",
+//     "amount":"7",
+//     "userid":"4HqqKNOYqCV3C9nNaHtw3ELBcTu1"
+// }
