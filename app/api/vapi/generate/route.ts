@@ -8,7 +8,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const { type, role, level, techstack, amount, userid } = await request.json();
+    const { type, role, level, difficulty, techstack, amount, userid } = await request.json();
 
     try {
         const { text: questions } = await generateText({
@@ -16,6 +16,7 @@ export async function POST(request: Request) {
             prompt: `Prepare questions for a job interview.
         The job role is ${role}.
         The job experience level is ${level}.
+        The difficulty of questions should be at a ${difficulty} level.
         The tech stack used in the job is: ${techstack}.
         The focus between behavioural and technical questions should lean towards: ${type}.
         The amount of questions required is: ${amount}.
@@ -31,13 +32,15 @@ export async function POST(request: Request) {
             role: role,
             type: type,
             level: level,
+            difficulty: difficulty,
             techstack: techstack.split(","),
             questions: JSON.parse(questions),
             userId: userid,
             finalized: true,
             coverImage: getRandomInterviewCover(),
             createdAt: new Date().toISOString(),
-        }
+        };
+
         await db.collection("interviews").add(interview);
 
         return Response.json({ success: true }, { status: 200 });
@@ -46,7 +49,6 @@ export async function POST(request: Request) {
         console.error(error);
 
         return Response.json({ success: false, error }, { status: 500 });
-
     }
 }
 
@@ -56,6 +58,7 @@ export async function POST(request: Request) {
 //     "type":"mixed",
 //     "role":"frontend",
 //     "level":"senior",
+//     "difficulty":"basic",
 //     "techstack":"next.js",
 //     "amount":"7",
 //     "userid":"4HqqKNOYqCV3C9nNaHtw3ELBcTu1"
