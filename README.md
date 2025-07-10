@@ -17,6 +17,7 @@ An AI-powered mock interview platform that simulates real-time voice-based inter
 - **Tailwind CSS**
 - **ShadCN UI**
 - **Firebase (Auth & Firestore)**
+- **Google Gemini API**
 - **Vapi Voice Agent**
 
 🔗 https://itsajinkya.vercel.app | 📫 https://www.linkedin.com/in/ajinkya2004
