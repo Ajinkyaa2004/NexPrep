@@ -2,7 +2,7 @@ import {initializeApp, getApps, cert} from "firebase-admin/app";
 import {getAuth} from "firebase-admin/auth";
 import {getFirestore} from "firebase-admin/firestore";
 
-const initFirebaseAdmin = () => {
+const initfirebaseAdmin = () => {
     const apps= getApps();
     if (!apps.length){
         initializeApp({
@@ -20,4 +20,4 @@ const initFirebaseAdmin = () => {
     }
 }
 
-export const {auth,db}= initFirebaseAdmin();
+export const {auth,db}= initfirebaseAdmin();
