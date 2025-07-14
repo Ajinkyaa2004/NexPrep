@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import {generateText} from "ai";
 import {google} from "@ai-sdk/google";
 import {getRandomInterviewCover} from "@/lib/utils";
@@ -47,7 +48,6 @@ export async function POST(request: Request) {
     }
     catch(error){
         console.error(error);
-
         return Response.json({ success: false, error }, { status: 500 });
     }
 }
