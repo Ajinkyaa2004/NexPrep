@@ -72,7 +72,7 @@ const Agent = ({userName, userId, type}: AgentProps) => {
             variableValues: {
                 username: userName,
                 userid: userId,
-            }
+            },
         })
     }
 
