@@ -1,15 +1,9 @@
-'use client';
-
 import dayjs from "dayjs";
 import Image from "next/image";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
-import Vapi from '@vapi-ai/web';
-
-
-
 
 const InterviewCard = ({
                            interviewId,
@@ -24,27 +18,6 @@ const InterviewCard = ({
     const formattedDate = dayjs(
         feedback?.createdAt || createdAt || Date.now()
     ).format("MMM D, YYYY");
-
-    // ✅ Initialize Vapi
-    // @ts-ignore
-    const vapi = new Vapi({
-        apiKey: process.env.NEXT_PUBLIC_VAPI_API_KEY!,
-    });
-
-
-    // ✅ Trigger voice interview
-    const handleStartInterview = () => {
-        vapi.start(
-            {
-                name: 'Interview Agent',
-            }, // ✅ assistant object (1st param)
-            undefined, // assistantOverrides
-            undefined, // squad
-            '27263057-f443-45cf-8f37-d377794dba74' // ✅ your workflow ID
-        );
-    };
-
-
 
     return (
         <div className="card-border w-[360px] max-sm:w-full min-h-96">
@@ -80,21 +53,37 @@ const InterviewCard = ({
                         "You haven't taken this interview yet. Take it now to improve your skills."}
                 </p>
 
-                <div className="flex flex-row justify-between items-center px-5 py-3">
-                    <DisplayTechIcons techStack={techstack} />
-                    {feedback ? (
-                        <Link href={`/interview/${interviewId}/feedback`}>
-                            <Button className="btn-primary">Check Feedback</Button>
-                        </Link>
-                    ) : (
-                        <Button className="btn-primary" onClick={handleStartInterview}>
-                            🎙️ Start Interview
-                        </Button>
-                    )}
-                </div>
+
+            <div className="flex flex-row justify-between items-center px-5 py-3">
+                <DisplayTechIcons techStack={techstack}/>
+                <Link
+                    href={
+                        feedback
+                            ? `/interview/${interviewId}/feedback`
+                            : `/interview/${interviewId}`
+                    }
+                >
+                    <Button className="btn-primary">
+                        {feedback ? "Check Feedback" : "View Interview"}
+                    </Button>
+                </Link>
             </div>
-        </div>
+            </div>
+            </div>
     );
 };
 
 export default InterviewCard;
+
+
+
+
+
+
+
+
+
+
+
+
+
