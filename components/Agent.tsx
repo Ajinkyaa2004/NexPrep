@@ -77,8 +77,8 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
                 userid: userId ?? "unknown",
             },
         });
-
     };
+
 
     const handleDisconnect = async () => {
         setCallStatus(CallStatus.FINISHED);
