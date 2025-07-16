@@ -71,15 +71,16 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        console.log("WORKFLOW ID:", process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID);
+        console.log("ASSISTANT ID:", process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
 
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+        await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!, {
             variableValues: {
                 username: userName ?? "Guest",
                 userid: userId ?? "unknown",
             },
         });
     };
+
 
 
 
