@@ -71,18 +71,30 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        console.log("ASSISTANT ID:", process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
+        const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!;
 
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!, {
-            variableValues: {
-                username: userName ?? "Guest",
-                userid: userId ?? "unknown",
-            },
-        });
+        if (type === "generate") {
+            await vapi.start(
+                undefined, // no agent
+                undefined,
+                undefined,
+                workflowId,
+                {
+                    variableValues: {
+                        username: userName ?? "Guest",
+                        userid: userId ?? "unknown",
+                    },
+                }
+            );
+        } else {
+            // fallback for mock call (if using agent)
+            await vapi.start("agent_id_here", {
+                variableValues: {
+                    username: userName ?? "Guest",
+                },
+            });
+        }
     };
-
-
-
 
     const handleDisconnect = async () => {
         setCallStatus(CallStatus.FINISHED);
@@ -134,9 +146,9 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
             <div className="w-full flex justify-center mt-4">
                 {callStatus !== "ACTIVE" ? (
                     <button className="relative btn-call" onClick={handleCall}>
-                        <span
-                            className={cn("absolute animate-ping rounded-full opacity-75", callStatus !== "CONNECTING" && "hidden")}
-                        />
+            <span
+                className={cn("absolute animate-ping rounded-full opacity-75", callStatus !== "CONNECTING" && "hidden")}
+            />
                         <span>{isCallInactiveOrFinished ? "CALL" : "..."}</span>
                     </button>
                 ) : (
