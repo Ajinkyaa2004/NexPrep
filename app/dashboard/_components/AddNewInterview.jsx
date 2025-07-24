@@ -1,5 +1,5 @@
 'use client';
-import React from 'react'
+import React, { use } from 'react'
 import { Button } from '../../../components/ui/button';
 import {
   Dialog,
@@ -13,10 +13,10 @@ import {
 
 import { Textarea } from '../../../components/ui/textarea';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '../../../components/ui/dropdown-menu';
 import { useState } from 'react';
 import { Input } from '../../../components/ui/input';
@@ -28,26 +28,29 @@ import { db } from '../../../utils/db.js';
 import { MockInterview } from '../../../utils/schema.js';
 import * as schema from '../../../utils/schema.js';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 
 
 
 function AddNewInterview() {
-    const [openDialog, setOpenDialog]= useState(false)
-    const [selectedMode, setSelectedMode] = useState("Select Mode")
-    const [selectedDuration, setSelectedDuration] = useState("Select Duration")
-    const [selectedDifficulty, setSelectedDifficulty] = useState("")
-    const [jobPosition, setJobPosition] = useState("")
-    const [jobDescription, setJobDescription] = useState("")
-    const [jobExperience, setJobExperience] = useState("")
-    const [location, setLocation] = useState("")
+  const [openDialog, setOpenDialog] = useState(false)
+  const [selectedMode, setSelectedMode] = useState("Select Mode")
+  const [selectedDuration, setSelectedDuration] = useState("Select Duration")
+  const [selectedDifficulty, setSelectedDifficulty] = useState("")
+  const [jobPosition, setJobPosition] = useState("")
+  const [jobDescription, setJobDescription] = useState("")
+  const [jobExperience, setJobExperience] = useState("")
+  const [location, setLocation] = useState("")
 
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const [JsonResponse,setJsonResponse]=useState([]);
+  const [JsonResponse, setJsonResponse] = useState([]);
 
-    // const {user}=useUser();
+  const router=useRouter();
 
-    const onSubmit = async (e) => {
+  // const {user}=useUser();
+
+  const onSubmit = async (e) => {
 
     setLoading(true);
     e.preventDefault();
@@ -111,29 +114,29 @@ Interview Difficulty: ${selectedDifficulty}
     console.log(JSON.parse(MockJsonResp));
     setJsonResponse(MockJsonResp);
 
-    if (MockJsonResp){
+    if (MockJsonResp) {
 
-    const resp=await db.insert(MockInterview).values({
-        mockId:uuidv4(),
+      console.log("MockJsonResp:", MockJsonResp.length);
+      const resp = await db.insert(MockInterview).values({
+        mockId: uuidv4(),
         jsonMockResp: MockJsonResp,
         jobPosition: jobPosition,
         jobDescription: jobDescription,
         jobExperience: jobExperience,
-        selectedMode: selectedMode,
-        selectedDuration: selectedDuration,
         selectedDifficulty: selectedDifficulty,
-        location: location,
+        // location: location,
         createdBy: 'admin',  // temp default
-        createdAt:moment().format('DD-MM-yyyy'),
-    }).returning({mockId:MockInterview.mockId});
+        createdAt: moment().format('DD-MM-yyyy'),
+      }).returning({ mockId: MockInterview.mockId });
 
-    console.log("Inserted ID:", resp);
-    if (resp){
+      console.log("Inserted ID:", resp);
+      if (resp) {
         setOpenDialog(false);
+        router.push ('/dashboard/interview/'+resp[0]?.mockId)
+      }
     }
-    }
-    else{
-        console.log('ERROR');
+    else {
+      console.log('ERROR');
     }
 
     setLoading(false);
@@ -146,7 +149,7 @@ Interview Difficulty: ${selectedDifficulty}
         onClick={() => setOpenDialog(true)}>
         <h2 className='text-lg text-center'>+ Add New</h2>
       </div>
-      
+
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className='max-w-3xl'>
           <DialogHeader>
@@ -158,27 +161,29 @@ Interview Difficulty: ${selectedDifficulty}
           <form onSubmit={onSubmit}>
             <div className='mt-2 my-2'>
               <label>Job Position / Job Role</label>
-              <Input placeholder="Ex. Full Stack Developer" required value={jobPosition} onChange={(event)=>setJobPosition(event.target.value)}/> 
+              <Input placeholder="Ex. Full Stack Developer" required value={jobPosition} onChange={(event) => setJobPosition(event.target.value)} />
             </div>
 
             <div className='mt-2 my-2'>
-              <label>Job Description</label>
-              <Textarea placeholder="Ex. React, Angular, NodeJS etc..." required value={jobDescription} onChange={(event)=>setJobDescription(event.target.value)}/> 
+              <label>Job Description / (in Short)</label>
+              <Textarea maxLength={2000}
+                rows={10}
+                placeholder="Enter up to 8–10 lines (around 1000–2000 characters)" required value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} />
             </div>
 
             <div className='my-2'>
               <label>Years of Experience</label>
-              <Input placeholder="Ex. 3" type="number" max="40" required value={jobExperience} onChange={(event)=>setJobExperience(event.target.value)}/> 
+              <Input placeholder="Ex. 3" type="number" max="40" required value={jobExperience} onChange={(event) => setJobExperience(event.target.value)} />
             </div>
 
             <div className='my-2'>
               <label>Difficulty Level</label>
-              <Input placeholder="Ex. Basic/Intermediate/Advance" required value={selectedDifficulty} onChange={(event)=>setSelectedDifficulty(event.target.value)}/> 
+              <Input placeholder="Ex. Basic/Intermediate/Advance" required value={selectedDifficulty} onChange={(event) => setSelectedDifficulty(event.target.value)} />
             </div>
 
             <div className='mt-2 my-2'>
               <label>Location</label>
-              <Input placeholder="Ex. Mumbai, Bangalore" required value={location} onChange={(event)=>setLocation(event.target.value)}/> 
+              <Input placeholder="Ex. Mumbai, Bangalore" required value={location} onChange={(event) => setLocation(event.target.value)} />
             </div>
 
             <div className="flex gap-4 my-2">
