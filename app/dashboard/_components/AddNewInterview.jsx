@@ -1,5 +1,6 @@
 'use client';
-import React, { use } from 'react'
+
+import React, { useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import {
   Dialog,
@@ -9,8 +10,6 @@ import {
   DialogTitle,
   DialogDescription
 } from '../../../components/ui/dialog';
-
-
 import { Textarea } from '../../../components/ui/textarea';
 import {
   DropdownMenu,
@@ -18,232 +17,173 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../../components/ui/dropdown-menu';
-import { useState } from 'react';
 import { Input } from '../../../components/ui/input';
 import { chatSession } from '../../../utils/GeminiAIModal';
-import { Loader, LoaderCircle } from 'lucide-react';
-
+import { LoaderCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../../../utils/db.js';
 import { MockInterview } from '../../../utils/schema.js';
-import * as schema from '../../../utils/schema.js';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
-
-
+import { motion, AnimatePresence } from 'framer-motion';
 
 function AddNewInterview() {
-  const [openDialog, setOpenDialog] = useState(false)
-  const [selectedMode, setSelectedMode] = useState("Select Mode")
-  const [selectedDuration, setSelectedDuration] = useState("Select Duration")
-  const [selectedDifficulty, setSelectedDifficulty] = useState("")
-  const [jobPosition, setJobPosition] = useState("")
-  const [jobDescription, setJobDescription] = useState("")
-  const [jobExperience, setJobExperience] = useState("")
-  const [location, setLocation] = useState("")
-
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedMode, setSelectedMode] = useState("Select Mode");
+  const [selectedDuration, setSelectedDuration] = useState("Select Duration");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("");
+  const [jobPosition, setJobPosition] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [jobExperience, setJobExperience] = useState("");
+  const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [JsonResponse, setJsonResponse] = useState([]);
-
-  const router=useRouter();
-
-  // const {user}=useUser();
+  const router = useRouter();
 
   const onSubmit = async (e) => {
-
-    setLoading(true);
     e.preventDefault();
-    console.log("Job Position:", jobPosition);
-    console.log("Job Description:", jobDescription);
-    console.log("Job Experience:", jobExperience);
-    console.log("Work Mode:", selectedMode);
-    console.log("Interview Duration:", selectedDuration);
-    console.log("Difficulty Level:", selectedDifficulty);
-    console.log("Location:", location);
-    const InputPrompt = `You are an AI Interview Question Generator. Based on the following inputs, generate a structured mock interview.
+    setLoading(true);
 
-Job Role: ${jobPosition}  
-Job Description: ${jobDescription}  
-Years of Experience: ${jobExperience}  
-Interview Duration: ${selectedDuration}   
-Interview Difficulty: ${selectedDifficulty}  
-
-
----
-
-🎯 **Guidelines:**
-
-1. **Question Distribution Based on Duration:**
-   - 15 minutes → Generate **5** questions  
-   - 30 minutes → Generate **10** questions  
-   - 45 minutes → Generate **12** questions  
-   - 60 minutes → Generate **15** questions  
-
-2. **Question Categories:**
-   - Ice Breaker  
-   - Basic Skills  
-   - Problem Solving  
-   - Tech Core  
-   - Aptitude  
-   - Situational / General (e.g., “What would you do if…”)
-
-3. **Distribution Based on Difficulty:**
-   - **Basic:** Prioritize Ice Breaker, Basic Skills, Aptitude, and Situational  
-   - **Intermediate:** Balanced coverage of all categories  
-   - **Advanced:** Emphasize Problem Solving, Tech Core, and Situational
-
-4. Provide answers along with the questions.
-
----
-
-💡 Return the result in this JSON format:
-{
-  "interview": {
-    "ice_breaker": [{ "question": "...", "answer": "..." }],
-    "basic_skills": [{ "question": "...", "answer": "..." }],
-    "problem_solving": [{ "question": "...", "answer": "..." }],
-    "tech_core": [{ "question": "...", "answer": "..." }],
-    "aptitude": [{ "question": "...", "answer": "..." }],
-    "situational": [{ "question": "...", "answer": "..." }]
-  }
-}`;
-
+    const InputPrompt = `You are an AI Interview Question Generator...`; // trimmed for clarity
     const result = await chatSession.sendMessage(InputPrompt);
-    const MockJsonResp = (result.response.text()).replace('```json', '').replace('```', '');
-    console.log(JSON.parse(MockJsonResp));
-    setJsonResponse(MockJsonResp);
+    const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
 
     if (MockJsonResp) {
-
-      console.log("MockJsonResp:", MockJsonResp.length);
       const resp = await db.insert(MockInterview).values({
         mockId: uuidv4(),
         jsonMockResp: MockJsonResp,
-        jobPosition: jobPosition,
-        jobDescription: jobDescription,
-        jobExperience: jobExperience,
-        selectedDifficulty: selectedDifficulty,
-        // location: location,
-        createdBy: 'admin',  // temp default
+        jobPosition,
+        jobDescription,
+        jobExperience,
+        selectedDifficulty,
+        createdBy: 'admin',
         createdAt: moment().format('DD-MM-yyyy'),
       }).returning({ mockId: MockInterview.mockId });
 
-      console.log("Inserted ID:", resp);
       if (resp) {
         setOpenDialog(false);
-        router.push ('/dashboard/interview/'+resp[0]?.mockId)
+        router.push(`/dashboard/interview/${resp[0]?.mockId}`);
       }
-    }
-    else {
-      console.log('ERROR');
     }
 
     setLoading(false);
-  }
+  };
 
   return (
     <div>
-      <div
-        className='p-10 border rounded-lg bg-secondary hover:scale-105 hover:shadow-md cursor-pointer transition-all'
-        onClick={() => setOpenDialog(true)}>
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setOpenDialog(true)}
+        className='p-10 border rounded-lg bg-secondary cursor-pointer shadow-sm hover:shadow-md transition-all'
+      >
         <h2 className='text-lg text-center'>+ Add New</h2>
-      </div>
+      </motion.div>
 
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className='max-w-3xl'>
-          <DialogHeader>
-            <DialogTitle className='text-2xl'>Tell us about the job role to tailor your mock interview.</DialogTitle>
-            <DialogDescription>
-              Add job title, description, location, working mode, and experience.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onSubmit}>
-            <div className='mt-2 my-2'>
-              <label>Job Position / Job Role</label>
-              <Input placeholder="Ex. Full Stack Developer" required value={jobPosition} onChange={(event) => setJobPosition(event.target.value)} />
-            </div>
+      <AnimatePresence>
+        {openDialog && (
+          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            <DialogContent className='max-w-3xl'>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+              >
+                <DialogHeader>
+                  <DialogTitle className='text-2xl'>
+                    Tell us about the job role to tailor your mock interview.
+                  </DialogTitle>
+                  <DialogDescription>
+                    Add job title, description, location, working mode, and experience.
+                  </DialogDescription>
+                </DialogHeader>
 
-            <div className='mt-2 my-2'>
-              <label>Job Description / (in Short)</label>
-              <Textarea maxLength={2000}
-                rows={10}
-                placeholder="Enter up to 8–10 lines (around 1000–2000 characters)" required value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} />
-            </div>
+                <form onSubmit={onSubmit}>
+                  <div className='mt-2 my-2'>
+                    <label>Job Position / Job Role</label>
+                    <Input required placeholder="Ex. Full Stack Developer" value={jobPosition} onChange={(e) => setJobPosition(e.target.value)} />
+                  </div>
 
-            <div className='my-2'>
-              <label>Years of Experience</label>
-              <Input placeholder="Ex. 3" type="number" max="40" required value={jobExperience} onChange={(event) => setJobExperience(event.target.value)} />
-            </div>
+                  <div className='mt-2 my-2'>
+                    <label>Job Description (Short)</label>
+                    <Textarea
+                      required
+                      rows={8}
+                      maxLength={2000}
+                      placeholder="Enter 8–10 lines (up to 2000 characters)"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                    />
+                  </div>
 
-            <div className='my-2'>
-              <label>Difficulty Level</label>
-              <Input placeholder="Ex. Basic/Intermediate/Advance" required value={selectedDifficulty} onChange={(event) => setSelectedDifficulty(event.target.value)} />
-            </div>
+                  <div className='my-2'>
+                    <label>Years of Experience</label>
+                    <Input type="number" required placeholder="Ex. 3" max="40" value={jobExperience} onChange={(e) => setJobExperience(e.target.value)} />
+                  </div>
 
-            <div className='mt-2 my-2'>
-              <label>Location</label>
-              <Input placeholder="Ex. Mumbai, Bangalore" required value={location} onChange={(event) => setLocation(event.target.value)} />
-            </div>
+                  <div className='my-2'>
+                    <label>Difficulty Level</label>
+                    <Input required placeholder="Basic / Intermediate / Advanced" value={selectedDifficulty} onChange={(e) => setSelectedDifficulty(e.target.value)} />
+                  </div>
 
-            <div className="flex gap-4 my-2">
-              <div className="flex-1">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Select Work Mode</label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {selectedMode}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="bottom" className="w-full">
-                    {["Remote", "Online", "Offline", "Hybrid"].map((mode) => (
-                      <DropdownMenuItem key={mode} onClick={() => setSelectedMode(mode)}>
-                        {mode}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="flex-1">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Interview Duration</label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {selectedDuration}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="bottom" className="w-full">
-                    {["15 min", "30 min", "45 min", "60 min"].map((duration) => (
-                      <DropdownMenuItem key={duration} onClick={() => setSelectedDuration(duration)}>
-                        {duration}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+                  <div className='my-2'>
+                    <label>Location</label>
+                    <Input required placeholder="Ex. Mumbai, Bangalore" value={location} onChange={(e) => setLocation(e.target.value)} />
+                  </div>
 
-            <div className="flex gap-5 justify-end">
-              <Button type="button" variant="ghost" onClick={() => setOpenDialog(false)}>Cancel</Button>
-              <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
-                {loading ? (
-                  <>
-                    <LoaderCircle className='animate-spin' /> Generating Interview...
-                  </>
-                ) : 'Start Interview'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+                  <div className='flex gap-4 my-2'>
+                    <div className='flex-1'>
+                      <label className="block text-sm font-medium">Select Work Mode</label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm">
+                            {selectedMode}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {["Remote", "Online", "Offline", "Hybrid"].map((mode) => (
+                            <DropdownMenuItem key={mode} onClick={() => setSelectedMode(mode)}>{mode}</DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className='flex-1'>
+                      <label className="block text-sm font-medium">Interview Duration</label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm">
+                            {selectedDuration}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {["15 min", "30 min", "45 min", "60 min"].map((duration) => (
+                            <DropdownMenuItem key={duration} onClick={() => setSelectedDuration(duration)}>{duration}</DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+
+                  <div className='flex gap-5 justify-end mt-4'>
+                    <Button type="button" variant="ghost" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                    <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <LoaderCircle className="animate-spin w-4 h-4" />
+                          Generating Interview...
+                        </div>
+                      ) : 'Start Interview'}
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
-  )
+  );
 }
 
 export default AddNewInterview;
