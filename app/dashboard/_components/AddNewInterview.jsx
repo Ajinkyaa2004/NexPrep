@@ -43,7 +43,55 @@ function AddNewInterview() {
     e.preventDefault();
     setLoading(true);
 
-    const InputPrompt = `You are an AI Interview Question Generator...`; // trimmed for clarity
+    const InputPrompt = `You are an AI Interview Question Generator. Based on the following inputs, generate a structured mock interview.
+
+Job Role: ` + jobPosition + `  
+Job Description: ` + jobDescription + `  
+Years of Experience: ` + jobExperience + `  
+Interview Duration: ` + selectedDuration + `  
+Candidate Location: ` + location + `  
+Interview Difficulty: ` + selectedDifficulty + `
+
+---
+
+🎯 **Guidelines:**
+
+1. **Question Distribution Based on Duration:**
+   - 15 minutes → Generate **5** questions  
+   - 30 minutes → Generate **10** questions  
+   - 45 minutes → Generate **12** questions  
+   - 60 minutes → Generate **15** questions  
+
+2. **Question Categories:**
+   - Ice Breaker  
+   - Basic Skills  
+   - Problem Solving  
+   - Tech Core  
+   - Aptitude  
+   - Situational / General (e.g., “What would you do if…”)
+
+3. **Distribution Based on Difficulty:**
+   - **Basic:** Prioritize Ice Breaker, Basic Skills, Aptitude, and Situational  
+   - **Intermediate:** Balanced coverage of all categories  
+   - **Advanced:** Emphasize Problem Solving, Tech Core, and Situational
+
+4. Provide answers along with the questions.
+
+---
+
+💡 Return the result in this JSON format:
+{
+  "interview": {
+    "ice_breaker": [{ "question": "...", "answer": "..." }],
+    "basic_skills": [{ "question": "...", "answer": "..." }],
+    "problem_solving": [{ "question": "...", "answer": "..." }],
+    "tech_core": [{ "question": "...", "answer": "..." }],
+    "aptitude": [{ "question": "...", "answer": "..." }],
+    "situational": [{ "question": "...", "answer": "..." }]
+  }
+}`;
+
+// trimmed for clarity
     const result = await chatSession.sendMessage(InputPrompt);
     const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
 

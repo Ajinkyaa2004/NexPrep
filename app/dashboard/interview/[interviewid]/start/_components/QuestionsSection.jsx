@@ -12,7 +12,7 @@ function QuestionsSection({ mockInterviewQuestion, activeQuestionIndex }) {
 
       const selectedVoice =
         voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
-        voices.find(v => v.lang === 'en-GB') ||
+        voices.find(v => v.lang === 'en-us') ||
         voices[0]; 
 
       if (selectedVoice) {
