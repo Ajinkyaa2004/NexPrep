@@ -2,14 +2,18 @@
 
 import React, { useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
-import { WebcamIcon } from 'lucide-react';
+import { Lightbulb, WebcamIcon } from 'lucide-react';
 import { db } from '../../../../utils/db';
 import { MockInterview } from '../../../../utils/schema';
 import { eq } from 'drizzle-orm';
 import { Button } from '../../../../components/ui/button';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-function InterviewPage({ params }) {
-  const interviewId = params?.interviewid;
+function InterviewPage() {
+  const params = useParams(); // ✅ Proper way in Client Components
+  const interviewId = params?.interviewid; // This now works without warning
+
   const [interviewData, setInterviewData] = useState(null);
   const [webCamEnabled, setWebCamEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,12 +42,11 @@ function InterviewPage({ params }) {
   };
 
   return (
-    <div className="my-10 px-4 flex flex-col items-center justify-center">
+    <div className="my-10 px-4 flex flex-col items-center justify-center relative">
       <h2 className="font-bold text-2xl mb-2">Let's Get Started</h2>
       <h3 className="text-gray-500 text-sm mb-6">Interview ID: {interviewId}</h3>
 
       <div className="w-full max-w-5xl flex flex-col md:flex-row gap-10 justify-center items-center">
-        {/* Webcam section */}
         <div className="flex flex-col items-center">
           {webCamEnabled ? (
             <Webcam
@@ -62,7 +65,6 @@ function InterviewPage({ params }) {
           )}
         </div>
 
-        {/* Interview Details section */}
         <div className="text-center md:text-left max-w-md w-full">
           {loading ? (
             <p className="text-gray-600">Loading interview details...</p>
@@ -85,6 +87,23 @@ function InterviewPage({ params }) {
             <p className="text-red-500">Interview not found.</p>
           )}
         </div>
+      </div>
+
+      <div className="mt-40 relative w-full">
+        <div className="md:absolute bottom-5 left-5 p-5 border rounded-lg border-yellow-100 bg-yellow-100 max-w-sm">
+          <h2 className="flex gap-2 items-center text-yellow-600 mb-2">
+            <Lightbulb />
+            <strong>Information</strong>
+          </h2>
+          <p className="text-sm text-gray-800">{process.env.NEXT_PUBLIC_INFORMATION}</p>
+        </div>
+      </div>
+
+      <div className="mt-10 flex justify-end w-full max-w-5xl px-4">
+       <Link href={'/dashboard/interview/' + interviewId + '/start'}>
+
+          <Button className="ml-auto">Start Interview</Button>
+        </Link>
       </div>
     </div>
   );

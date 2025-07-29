@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase service account key (DO NOT COMMIT)
+/ai-based-interview-57855-firebase-adminsdk-fbsvc-6254179b7f.json
