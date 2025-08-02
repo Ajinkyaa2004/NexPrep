@@ -12,10 +12,7 @@ import moment from 'moment';
 import { db } from '../../../../../../utils/db';
 import { SpeechProvider } from '@speechly/react-client';
 
-
-
-
-function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, interviewData }) {
+function RecordAnswerSection({mockInterviewQuestion, activeQuestionIndex, interviewData}) {
   const [userAnswer, setUserAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +21,7 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
 
   useEffect(() => {
     results.forEach((result) => {
-      setUserAnswer((prevAns) => prevAns + result?.transcript);
+      setUserAnswer((prevAns) => result?.transcript);
     });
   }, [results]);
 

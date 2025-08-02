@@ -58,9 +58,9 @@ Interview Difficulty: ` + selectedDifficulty + `
 
 1. **Question Distribution Based on Duration:**
    - 15 minutes → Generate **5** questions  
-   - 30 minutes → Generate **10** questions  
-   - 45 minutes → Generate **12** questions  
-   - 60 minutes → Generate **15** questions  
+   - 30 minutes → Generate **9** questions  
+   - 45 minutes → Generate **11** questions  
+  
 
 2. **Question Categories:**
    - Ice Breaker  
@@ -93,6 +93,7 @@ Interview Difficulty: ` + selectedDifficulty + `
 
 // trimmed for clarity
     const result = await chatSession.sendMessage(InputPrompt);
+    console.log(result);
     const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
 
     if (MockJsonResp) {
@@ -205,7 +206,7 @@ Interview Difficulty: ` + selectedDifficulty + `
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          {["15 min", "30 min", "45 min", "60 min"].map((duration) => (
+                          {["15 min", "30 min", "45 min"].map((duration) => (
                             <DropdownMenuItem key={duration} onClick={() => setSelectedDuration(duration)}>{duration}</DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
