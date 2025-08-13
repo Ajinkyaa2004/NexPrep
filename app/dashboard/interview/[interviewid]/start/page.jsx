@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import QuestionsSection from './_components/QuestionsSection';
 import dynamic from 'next/dynamic';
 import { Button } from '../../../../../components/ui/button';
+import Link from 'next/link';
 
 // ✅ Dynamically import RecordAnswerSection with SSR disabled
 const RecordAnswerSection = dynamic(
@@ -81,22 +82,36 @@ function StartInterview() {
       </div>
 
       <div className="flex justify-end gap-6">
-        {activeQuestionIndex > 0 && (
-          <Button onClick={() => setActiveQuestionIndex(activeQuestionIndex - 1)}>
-            Previous Question
-          </Button>
-        )}
+  {activeQuestionIndex > 0 && (
+    <Button
+      onClick={() => setActiveQuestionIndex(activeQuestionIndex - 1)}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium transition-all duration-200"
+    >
+      Previous Question
+    </Button>
+  )}
 
-        {activeQuestionIndex !== mockInterviewQuestion?.length - 1 && (
-          <Button onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}>
-            Next Question
-          </Button>
-        )}
+  {activeQuestionIndex !== mockInterviewQuestion?.length - 1 && (
+    <Button
+      onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium transition-all duration-200"
+    >
+      Next Question
+    </Button>
+  )}
 
-        {activeQuestionIndex === mockInterviewQuestion?.length - 1 && (
-          <Button>End Interview</Button>
-        )}
-      </div>
+  {activeQuestionIndex === mockInterviewQuestion?.length - 1 && (
+
+      <Link href={'/dashboard/interview/'+interviewData?.mockId+"/feedback"}>
+    <Button 
+      className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium transition-all duration-200"
+    >
+      End Interview
+    </Button>
+    </Link>
+  )}
+</div>
+
     </div>
   );
 }

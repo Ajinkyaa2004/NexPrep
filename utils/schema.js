@@ -23,4 +23,5 @@ export const UserAnswer=pgTable('userAnswer',{
   rating:varchar('rating'),
   userEmail:varchar('userEmail'),
   createdAt: varchar("createdAt", { length: 2000 }),
+  strength:varchar('strength')
 })

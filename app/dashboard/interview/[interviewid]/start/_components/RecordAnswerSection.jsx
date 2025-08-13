@@ -12,16 +12,26 @@ import moment from 'moment';
 import { db } from '../../../../../../utils/db';
 import { SpeechProvider } from '@speechly/react-client';
 
-function RecordAnswerSection({mockInterviewQuestion, activeQuestionIndex, interviewData}) {
+function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, interviewData }) {
   const [userAnswer, setUserAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
   const {
-    error,interimResult,isRecording,results,startSpeechToText,stopSpeechToText,}=useSpeechToText({continuous:true,useLegacyResults:false,});
+    error,
+    interimResult,
+    isRecording,
+    results,
+    startSpeechToText,
+    stopSpeechToText,
+    setResults
+  } = useSpeechToText({
+    continuous: true,
+    useLegacyResults: false,
+  });
 
   useEffect(() => {
     results.forEach((result) => {
-      setUserAnswer((prevAns) => result?.transcript);
+      setUserAnswer(() => result?.transcript);
     });
   }, [results]);
 
@@ -45,20 +55,22 @@ function RecordAnswerSection({mockInterviewQuestion, activeQuestionIndex, interv
       "Question:" +
       mockInterviewQuestion[activeQuestionIndex]?.question +
       ", User Answer:" +
-      userAnswer +
-      ",Depend on Question and user Answer for given interview Question" +
-      "please give us rating for the answer  feedback as area of improvement and areas where user were performing well if any" +
-      "in just 5 to 8 lines to improve it in JSON format with rating field and feedback field";
+     userAnswer +
+  ", Depending on the question and the user's answer for the given interview question, " +
+  "please provide a rating and feedback in JSON format. " +
+  "The JSON should have two fields: 'rating' (numeric score) and 'feedback' (a 5–8 line text). " +
+  "In the feedback, first mention areas of improvement, then mention strengths where the user performed well."
+
 
     const result = await chatSession.sendMessage(feedbackPrompt);
 
     const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
     const JsonFeedbackResp = JSON.parse(MockJsonResp);
 
-    // ✅ Log all required values instantly here
     console.log("User Answer:", userAnswer);
     console.log("Rating:", JsonFeedbackResp?.rating);
     console.log("Feedback:", JsonFeedbackResp?.feedback);
+    console.log("Strength:",JsonFeedbackResp?.Strength);
 
     const resp = await db.insert(UserAnswer).values({
       mockIdRef: interviewData?.mockId,
@@ -72,32 +84,54 @@ function RecordAnswerSection({mockInterviewQuestion, activeQuestionIndex, interv
 
     if (resp) {
       toast('User answer recorded successfully');
+      setResults([]);
     }
+    setResults([]);
     setUserAnswer('');
     setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center flex-col">
-      <div className="flex flex-col mt-20 justify-center items-center bg-black rounded-lg p-5">
-        <Image src="/webcam.svg" alt="Webcam" width={200} height={200} className="absolute" />
-        <Webcam
-          mirrored={true}
-          style={{
-            height: 300,
-            width: '100%',
-            zIndex: 10,
-          }}
-        />
+    <div className="flex items-center justify-center flex-col px-4">
+      {/* Webcam Section */}
+      <div className="flex flex-col mt-12 justify-center items-center bg-white rounded-xl p-5 border shadow-sm">
+        <div className="relative">
+          <Image
+            src="/webcam.svg"
+            alt="Webcam Overlay"
+            width={300}
+            height={200}
+            className="absolute opacity-20 z-0 justify-center ml-12"
+          />
+          <Webcam
+            mirrored
+            style={{
+              height: 300,
+              width: 400,
+              borderRadius: '12px',
+              border: '2px solid #e5e7eb',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+              zIndex: 10,
+            }}
+          />
+        </div>
       </div>
 
-      <Button disabled={loading} variant="outline" className="my-10" onClick={StartStopRecording}>
+      {/* Record Button */}
+      <Button
+        disabled={loading}
+        onClick={StartStopRecording}
+        className={`my-10 px-6 py-3 font-semibold flex items-center gap-2 transition-all duration-200 hover:scale-105 ${
+          isRecording
+            ? 'bg-red-600 hover:bg-red-700 text-white'
+            : 'bg-blue-600 hover:bg-blue-700 text-white'
+        }`}
+      >
         {isRecording ? (
-          <span className="flex items-center gap-2 text-red-500">
-            <h2 className="text-red-600 flex gap-2">
-              <Mic /> Stop Recording...
-            </h2>
-          </span>
+          <>
+            <Mic className="h-5 w-5" />
+            Stop Recording...
+          </>
         ) : (
           'Record Answer'
         )}

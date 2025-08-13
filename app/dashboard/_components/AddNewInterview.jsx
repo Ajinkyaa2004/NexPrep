@@ -1,4 +1,5 @@
 'use client';
+import { auth } from '../../../firebase/client';
 
 import React, { useState } from 'react';
 import { Button } from '../../../components/ui/button';
@@ -42,7 +43,7 @@ function AddNewInterview() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+    const user = auth.currentUser; 
     const InputPrompt = `You are an AI Interview Question Generator. Based on the following inputs, generate a structured mock interview.
 
 Job Role: ` + jobPosition + `  
@@ -104,7 +105,7 @@ Interview Difficulty: ` + selectedDifficulty + `
         jobDescription,
         jobExperience,
         selectedDifficulty,
-        createdBy: 'admin',
+         createdBy: user?.email || 'unknown',
         createdAt: moment().format('DD-MM-yyyy'),
       }).returning({ mockId: MockInterview.mockId });
 
