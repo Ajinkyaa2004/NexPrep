@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/button';
 import { auth } from '../../../firebase/client';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const containerVariants = {
   hidden: { opacity: 0, scale: 0.95, y: 30 },
@@ -37,23 +36,36 @@ const itemVariants = {
   }),
 };
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Welcome back! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1000);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('User signed up:', userCredential.user);
+      toast.success('Account created! Redirecting to sign-in...');
+      setTimeout(() => router.push('/sign-in'), 1500);
     } catch (error) {
-      console.error('Signin error:', error.message);
-      toast.error(error.message || 'Sign in failed');
+      console.error('Signup error:', error.message);
+
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('An account already exists with this email. Please sign in instead.');
+      } else {
+        toast.error(error.message || 'Signup failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -78,14 +90,14 @@ export default function SignIn() {
           variants={itemVariants}
           custom={1}
         >
-          Welcome Back
+          Create a new account
         </motion.h1>
         <motion.p
           className="text-sm text-center text-gray-500 mb-8"
           variants={itemVariants}
           custom={2}
         >
-          Sign in to continue your journey!
+          Join and prepare for your future!
         </motion.p>
 
         <motion.form
@@ -94,37 +106,69 @@ export default function SignIn() {
           initial="hidden"
           animate="visible"
         >
-          {[3, 4].map((i) => (
+          {[3, 4, 5, 6].map((i) => (
             <motion.div key={i} className="relative group" variants={itemVariants} custom={i}>
               <input
-                type={i === 4 ? 'password' : 'email'}
-                id={i === 4 ? 'password' : 'email'}
+                type={i === 5 || i === 6 ? 'password' : i === 4 ? 'email' : 'text'}
+                id={
+                  i === 3
+                    ? 'name'
+                    : i === 4
+                    ? 'email'
+                    : i === 5
+                    ? 'password'
+                    : 'confirm-password'
+                }
                 required
                 className="w-full px-4 pt-6 pb-1 text-sm bg-transparent border border-gray-300 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent peer transition"
                 placeholder=" "
-                value={i === 4 ? password : email}
+                value={
+                  i === 3
+                    ? fullName
+                    : i === 4
+                    ? email
+                    : i === 5
+                    ? password
+                    : confirmPassword
+                }
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (i === 4) setPassword(val);
-                  else setEmail(val);
+                  if (i === 3) setFullName(val);
+                  else if (i === 4) setEmail(val);
+                  else if (i === 5) setPassword(val);
+                  else setConfirmPassword(val);
                 }}
               />
               <label
-                htmlFor={i === 4 ? 'password' : 'email'}
+                htmlFor={
+                  i === 3
+                    ? 'name'
+                    : i === 4
+                    ? 'email'
+                    : i === 5
+                    ? 'password'
+                    : 'confirm-password'
+                }
                 className="absolute left-4 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-blue-500"
               >
-                {i === 4 ? 'Password' : 'Email Address'}
+                {i === 3
+                  ? 'Full Name'
+                  : i === 4
+                  ? 'Email Address'
+                  : i === 5
+                  ? 'Password'
+                  : 'Confirm Password'}
               </label>
             </motion.div>
           ))}
 
           {/* Submit Button */}
-          <motion.div variants={itemVariants} custom={5}>
+          <motion.div variants={itemVariants} custom={7}>
             <Button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-md rounded-xl py-2 text-base font-medium transition"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </Button>
           </motion.div>
         </motion.form>
@@ -133,11 +177,11 @@ export default function SignIn() {
         <motion.p
           className="text-sm text-center text-gray-500 mt-6"
           variants={itemVariants}
-          custom={6}
+          custom={8}
         >
-          Don’t have an account?{' '}
-          <Link href="auth/page.js" className="text-blue-500 hover:underline">
-            Sign up here
+          Already have an account?{' '}
+          <Link href="/sign-in" className="text-blue-500 hover:underline">
+            Sign in here
           </Link>
         </motion.p>
       </motion.div>
