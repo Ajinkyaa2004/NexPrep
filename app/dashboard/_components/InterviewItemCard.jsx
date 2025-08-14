@@ -21,7 +21,7 @@ function InterviewItemCard({interview}) {
         <h2 className='text-xs text-gray-500 ' >Created At: {interview.createdAt}</h2>
         <div className='flex justify-between mt-5 gap-5'>
           <Button size='sm' variant='outline' className='w-35' onClick={onFeedbackPress}>Feedback</Button>
-          <Button size='sm' className='w-35' onClick={onStart}> Retake </Button>
+          <Button size='sm' className='w-35 bg-blue-600 hover:bg-blue-700 text-white' onClick={onStart}> Retake </Button>
         </div>
 
     </div>

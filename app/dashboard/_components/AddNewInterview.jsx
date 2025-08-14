@@ -28,6 +28,8 @@ import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+
 function AddNewInterview() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedMode, setSelectedMode] = useState("Select Mode");
@@ -40,10 +42,12 @@ function AddNewInterview() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const user = auth.currentUser; 
+    const user = auth.currentUser;
     const InputPrompt = `You are an AI Interview Question Generator. Based on the following inputs, generate a structured mock interview.
 
 Job Role: ` + jobPosition + `  
@@ -57,28 +61,34 @@ Interview Difficulty: ` + selectedDifficulty + `
 
 🎯 **Guidelines:**
 
-1. **Question Distribution Based on Duration:**
-   - 15 minutes → Generate **5** questions  
-   - 30 minutes → Generate **9** questions  
-   - 45 minutes → Generate **11** questions  
-  
+1. **Question Count by Duration** (total questions):
+   - 15 minutes → 5 questions  
+   - 30 minutes → 7 questions  
+   - 45 minutes → 9 questions  
 
-2. **Question Categories:**
-   - Ice Breaker  
-   - Basic Skills  
-   - Problem Solving  
-   - Tech Core  
-   - Aptitude  
-   - Situational / General (e.g., “What would you do if…”)
+2. **Question Categories**:
+   - ice_breaker  
+   - basic_skills  
+   - problem_solving  
+   - tech_core  
+   - aptitude  
+   - situational  
 
-3. **Distribution Based on Difficulty:**
-   - **Basic:** Prioritize Ice Breaker, Basic Skills, Aptitude, and Situational  
-   - **Intermediate:** Balanced coverage of all categories  
-   - **Advanced:** Emphasize Problem Solving, Tech Core, and Situational
+3. **Difficulty Distribution Rules**:
+   - **Basic** → Focus more on: ice_breaker, basic_skills, aptitude, situational (at least 1 from each).  
+   - **Intermediate** → Distribute evenly across all categories also include 1 ice_breaker (at least 1 from each).  
+   - **Advanced** → Focus more on: problem_solving, tech_core, situational also include 1 ice_breaker (at least 1 from each).  
 
-4. Provide answers along with the questions.
+4. **No Empty Categories**:
+   - If total questions are less than total categories, pick the categories according to the difficulty priority first, then fill remaining slots with other categories.
+   - Always include at least 1 question in each priority category for the chosen difficulty.
 
----
+5. **Answers**:
+   - Keep answers short, clear, and relevant to the role and JD.
+   - For coding/technical answers, keep them brief (≤3 lines of pseudocode or explanation).
+
+6. **Output**:
+   - Return only valid JSON in the following format:
 
 💡 Return the result in this JSON format:
 {
@@ -92,27 +102,33 @@ Interview Difficulty: ` + selectedDifficulty + `
   }
 }`;
 
-// trimmed for clarity
-    const result = await chatSession.sendMessage(InputPrompt);
-    console.log(result);
-    const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
+    // trimmed for clarity
+    try {
+      const result = await chatSession.sendMessage(InputPrompt);
+      console.log(result);
+      const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
 
-    if (MockJsonResp) {
-      const resp = await db.insert(MockInterview).values({
-        mockId: uuidv4(),
-        jsonMockResp: MockJsonResp,
-        jobPosition,
-        jobDescription,
-        jobExperience,
-        selectedDifficulty,
-         createdBy: user?.email || 'unknown',
-        createdAt: moment().format('DD-MM-yyyy'),
-      }).returning({ mockId: MockInterview.mockId });
+      if (MockJsonResp) {
+        const resp = await db.insert(MockInterview).values({
+          mockId: uuidv4(),
+          jsonMockResp: MockJsonResp,
+          jobPosition,
+          jobDescription,
+          jobExperience,
+          selectedDifficulty,
+          createdBy: user?.email || 'unknown',
+          createdAt: moment().format('DD-MM-yyyy'),
+        }).returning({ mockId: MockInterview.mockId });
 
-      if (resp) {
-        setOpenDialog(false);
-        router.push(`/dashboard/interview/${resp[0]?.mockId}`);
+        if (resp) {
+          setOpenDialog(false);
+          router.push(`/dashboard/interview/${resp[0]?.mockId}`);
+        }
       }
+    } catch (error) {
+      console.error(error);
+      setErrorMsg("⚠️ Our AI is currently busy. Please try again in a moment.");
+      setTimeout(() => setErrorMsg(""), 5000); // hide after 5s
     }
 
     setLoading(false);
@@ -215,6 +231,12 @@ Interview Difficulty: ` + selectedDifficulty + `
                     </div>
                   </div>
 
+                  {errorMsg && (
+                    <div className="mb-4 bg-red-100 text-red-700 px-4 py-2 rounded-md text-sm border border-red-300">
+                      {errorMsg}
+                    </div>
+                  )}
+
                   <div className='flex gap-5 justify-end mt-4'>
                     <Button type="button" variant="ghost" onClick={() => setOpenDialog(false)}>Cancel</Button>
                     <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -226,6 +248,7 @@ Interview Difficulty: ` + selectedDifficulty + `
                       ) : 'Start Interview'}
                     </Button>
                   </div>
+
                 </form>
               </motion.div>
             </DialogContent>
