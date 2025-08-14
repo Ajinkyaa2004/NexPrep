@@ -57,7 +57,7 @@ export default function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('User signed up:', userCredential.user);
       toast.success('Account created! Redirecting to sign-in...');
-      setTimeout(() => router.push('/sign-in'), 1500);
+      setTimeout(() => router.push('/auth/sign-in'), 1500);
     } catch (error) {
       console.error('Signup error:', error.message);
 
@@ -180,7 +180,7 @@ export default function SignUp() {
           custom={8}
         >
           Already have an account?{' '}
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
+          <Link href="/auth/sign-in" className="text-blue-500 hover:underline">
             Sign in here
           </Link>
         </motion.p>

@@ -136,7 +136,7 @@ export default function SignIn() {
           custom={6}
         >
           Don’t have an account?{' '}
-          <Link href="sign-up" className="text-blue-500 hover:underline">
+          <Link href="/auth/sign-up" className="text-blue-500 hover:underline">
             Sign up here
           </Link>
         </motion.p>
