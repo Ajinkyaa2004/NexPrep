@@ -65,6 +65,7 @@ Interview Difficulty: ` + selectedDifficulty + `
    - 15 minutes → 5 questions  
    - 30 minutes → 7 questions  
    - 45 minutes → 9 questions  
+   - Never create number of questions more than 9.
 
 2. **Question Categories**:
    - ice_breaker  
