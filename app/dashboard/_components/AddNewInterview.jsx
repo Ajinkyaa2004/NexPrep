@@ -150,7 +150,7 @@ Interview Difficulty: ` + selectedDifficulty + `
       <AnimatePresence>
         {openDialog && (
           <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-            <DialogContent className='max-w-3xl'>
+            <DialogContent className='w-full max-w-xs sm:max-w-sm md:max-w-3xl lg:max-w-4xl max-h-[83vh] sm:max-h-[85vh] md:max-h-[90vh] lg:max-h-[95vh] overflow-auto'>
               <motion.div
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -176,11 +176,12 @@ Interview Difficulty: ` + selectedDifficulty + `
                     <label>Job Description (Short)</label>
                     <Textarea
                       required
-                      rows={8}
-                      maxLength={2000}
+                      rows={6}
+                      maxLength={4000}
                       placeholder="Enter 8–10 lines (up to 2000 characters)"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}
+                      className="resize-none overflow-y-auto max-h-60 sm:max-h-30 md:max-h-60 lg:max-h-55 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -199,8 +200,8 @@ Interview Difficulty: ` + selectedDifficulty + `
                     <Input required placeholder="Ex. Mumbai, Bangalore" value={location} onChange={(e) => setLocation(e.target.value)} />
                   </div>
 
-                  <div className='flex gap-4 my-2'>
-                    <div className='flex-1'>
+                  <div className='flex gap-4 my-2 flex-wrap'>
+                    <div className='flex-1 min-w-[140px]'>
                       <label className="block text-sm font-medium">Select Work Mode</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -216,7 +217,7 @@ Interview Difficulty: ` + selectedDifficulty + `
                       </DropdownMenu>
                     </div>
 
-                    <div className='flex-1'>
+                    <div className='flex-1 min-w-[140px]'>
                       <label className="block text-sm font-medium">Interview Duration</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -239,7 +240,7 @@ Interview Difficulty: ` + selectedDifficulty + `
                     </div>
                   )}
 
-                  <div className='flex gap-5 justify-end mt-4'>
+                  <div className='flex gap-5 justify-end mt-4 flex-wrap'>
                     <Button type="button" variant="ghost" onClick={() => setOpenDialog(false)}>Cancel</Button>
                     <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
                       {loading ? (
@@ -254,6 +255,7 @@ Interview Difficulty: ` + selectedDifficulty + `
                 </form>
               </motion.div>
             </DialogContent>
+
           </Dialog>
         )}
       </AnimatePresence>
