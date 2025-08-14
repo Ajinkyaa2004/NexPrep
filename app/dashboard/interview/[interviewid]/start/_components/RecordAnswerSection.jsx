@@ -92,51 +92,55 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
   };
 
   return (
-    <div className="flex items-center justify-center flex-col px-4">
-      {/* Webcam Section */}
-      <div className="flex flex-col mt-12 justify-center items-center bg-white rounded-xl p-5 border shadow-sm">
-        <div className="relative">
-          <Image
-            src="/webcam.svg"
-            alt="Webcam Overlay"
-            width={300}
-            height={200}
-            className="absolute opacity-20 z-0 justify-center ml-12"
-          />
-          <Webcam
-            mirrored
-            style={{
-              height: 300,
-              width: 400,
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-              zIndex: 10,
-            }}
-          />
-        </div>
-      </div>
+  <div className="flex items-center justify-center flex-col px-4 w-full ">
+  {/* Webcam Section */}
+  <div className="flex flex-col mt-12 justify-center items-center bg-white rounded-xl p-5 border shadow-sm w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+    <div className="relative w-full flex justify-center" style={{ aspectRatio: '4/3', maxWidth: 400 }}>
+      {/* Webcam Overlay */}
+      <Image
+        src="/webcam.svg"
+        alt="Webcam Overlay"
+        fill
+        className="absolute object-contain opacity-20 z-0"
+      />
 
-      {/* Record Button */}
-      <Button
-        disabled={loading}
-        onClick={StartStopRecording}
-        className={`my-10 px-6 py-3 font-semibold flex items-center gap-2 transition-all duration-200 hover:scale-105 ${
-          isRecording
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
-        }`}
-      >
-        {isRecording ? (
-          <>
-            <Mic className="h-5 w-5" />
-            Stop Recording...
-          </>
-        ) : (
-          'Record Answer'
-        )}
-      </Button>
+      {/* Webcam */}
+      <Webcam
+        mirrored
+        style={{
+          height: '100%',
+          width: '100%',
+          borderRadius: '12px',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+          zIndex: 10,
+        }}
+      />
     </div>
+  </div>
+
+  {/* Record Button */}
+  <Button
+    disabled={loading}
+    onClick={StartStopRecording}
+    className={`my-5 px-6 py-3 font-semibold flex items-center gap-2 transition-all duration-200 hover:scale-105 ${
+      isRecording
+        ? 'bg-red-600 hover:bg-red-700 text-white'
+        : 'bg-blue-600 hover:bg-blue-700 text-white'
+    }`}
+  >
+    {isRecording ? (
+      <>
+        <Mic className="h-5 w-5" />
+        Stop Recording...
+      </>
+    ) : (
+      'Record Answer'
+    )}
+  </Button>
+</div>
+
+
   );
 }
 

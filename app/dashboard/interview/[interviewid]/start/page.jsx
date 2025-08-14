@@ -63,7 +63,7 @@ function StartInterview() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap- mt-3">
       <div>
         <QuestionsSection
           mockInterviewQuestion={mockInterviewQuestion}
@@ -72,7 +72,7 @@ function StartInterview() {
       </div>
 
       <div className="flex justify-center items-start">
-        <RecordAnswerSection
+        <RecordAnswerSection 
           mockInterviewQuestion={mockInterviewQuestion}
           activeQuestionIndex={activeQuestionIndex}
           interviewData={interviewData}
@@ -85,7 +85,7 @@ function StartInterview() {
   {activeQuestionIndex > 0 && (
     <Button
       onClick={() => setActiveQuestionIndex(activeQuestionIndex - 1)}
-      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium transition-all duration-200"
+      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 mb-10 rounded-md font-medium transition-all duration-200"
     >
       Previous Question
     </Button>
@@ -94,12 +94,12 @@ function StartInterview() {
   {activeQuestionIndex !== mockInterviewQuestion?.length - 1 && (
     <Button
       onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}
-      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium transition-all duration-200"
+      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2  rounded-md font-medium transition-all duration-200"
     >
       Next Question
     </Button>
   )}
-
+ 
   {activeQuestionIndex === mockInterviewQuestion?.length - 1 && (
 
       <Link href={'/dashboard/interview/'+interviewData?.mockId+"/feedback"}>
