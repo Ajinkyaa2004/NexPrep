@@ -76,11 +76,12 @@ Interview Difficulty: ` + selectedDifficulty + `
 
 3. **Difficulty Distribution Rules**:
    - **Basic** → Focus more on: ice_breaker, basic_skills, aptitude, situational (at least 1 from each).  
-   - **Intermediate** → Distribute evenly across all categories also include 1 ice_breaker (at least 1 from each).  
-   - **Advanced** → Focus more on: problem_solving, tech_core, situational also include 1 ice_breaker (at least 1 from each).  
+   - **Intermediate** → Distribute evenly across all categories; include **1–2 ice_breaker questions**; at least 1 from each other category.  
+   - **Advanced** → Focus more on: problem_solving, tech_core, situational; include **1–2 ice_breaker questions**; at least 1 from each other category.  
+   - **Never ask more than 9 questions**.
 
 4. **No Empty Categories**:
-   - If total questions are less than total categories, pick the categories according to the difficulty priority first, then fill remaining slots with other categories.
+   - If total questions are less than total categories, pick categories according to the difficulty priority first, then fill remaining slots with other categories.
    - Always include at least 1 question in each priority category for the chosen difficulty.
 
 5. **Answers**:
@@ -90,7 +91,7 @@ Interview Difficulty: ` + selectedDifficulty + `
 6. **Output**:
    - Return only valid JSON in the following format:
 
-💡 Return the result in this JSON format:
+💡 **JSON Format**:
 {
   "interview": {
     "ice_breaker": [{ "question": "...", "answer": "..." }],
