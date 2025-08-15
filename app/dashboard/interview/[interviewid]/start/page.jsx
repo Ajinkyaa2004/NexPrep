@@ -72,7 +72,7 @@ function StartInterview() {
       </div>
 
       <div className="flex justify-center items-start">
-        <RecordAnswerSection 
+        <RecordAnswerSection
           mockInterviewQuestion={mockInterviewQuestion}
           activeQuestionIndex={activeQuestionIndex}
           interviewData={interviewData}

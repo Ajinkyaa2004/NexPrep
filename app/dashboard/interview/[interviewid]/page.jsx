@@ -104,7 +104,7 @@ function InterviewPage() {
               {interviewData.jobExperience}
             </p>
             <p>
-              <strong className="font-bold text-gray-800 ">Difficulty Level:</strong>{' '}
+              <strong className="font-bold text-gray-800 mt-5">Difficulty Level:</strong>{' '}
               {interviewData.selectedDifficulty}
             </p>
           </div>

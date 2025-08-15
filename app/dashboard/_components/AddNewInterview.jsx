@@ -90,7 +90,7 @@ Interview Difficulty: ` + selectedDifficulty + `
    - For coding/technical answers, keep them brief (≤3 lines of pseudocode or explanation).
 
 6. **Output**:
-   - Return only valid JSON in the following format:
+   - Striclty return only valid JSON in the following format:
 
 💡 **JSON Format**:
 {
@@ -118,6 +118,7 @@ Interview Difficulty: ` + selectedDifficulty + `
           jobDescription,
           jobExperience,
           selectedDifficulty,
+          selectedDuration, 
           createdBy: user?.email || 'unknown',
           createdAt: moment().format('DD-MM-yyyy'),
         }).returning({ mockId: MockInterview.mockId });
