@@ -74,107 +74,108 @@ export default async function Feedback({ params }) {
 
       {/* Feedback Section */}
       <div className="space-y-5">
-        {feedbackList.length > 0 ? (
-          feedbackList.map((item, idx) => {
-            const ratingNum = Number(item.rating || 0);
-            const perf = getPerformanceTag(ratingNum);
+      {feedbackList.length > 0 ? (
+  feedbackList.map((item, idx) => {
+    const ratingNum = Number(item.rating || 0);
+    const perf = getPerformanceTag(ratingNum);
 
-            const feedbackPoints = item.feedback
-              ? item.feedback.split(/\. |\n|,/).filter(Boolean)
-              : [];
+    // Split feedback only on ". " to preserve sentence integrity
+    const feedbackPoints = item.feedback
+      ? item.feedback.split(/\. /).filter(Boolean)
+      : [];
 
-            const strengthPoints = item.strength
-              ? item.strength.split(/\. |\n|,/).filter(Boolean)
-              : [];
+    // Strength points (if any) handled similarly
+    const strengthPoints = item.strength
+      ? item.strength.split(/\. /).filter(Boolean)
+      : [];
 
             return (
-<Collapsible
-  key={item.id ?? idx}
-  className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all"
->
-  {/* Trigger with gradient + rotating chevron */}
-  <CollapsibleTrigger className="group p-4 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 rounded-t-xl transition-colors">
-    <span className="font-semibold text-gray-800 text-lg flex items-center gap-2">
-      <FileText className="h-5 w-5 text-blue-500" />
-      {idx + 1}. {item.question}
-    </span>
-    <ChevronsUpDown className="h-5 w-5 text-gray-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-  </CollapsibleTrigger>
+              <Collapsible
+                key={item.id ?? idx}
+                className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all">
+                {/* Trigger with gradient + rotating chevron */}
+                <CollapsibleTrigger className="group p-4 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 rounded-t-xl transition-colors">
+                  <span className="font-semibold text-gray-800 text-lg flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-500" />
+                    {idx + 1}. {item.question}
+                  </span>
+                  <ChevronsUpDown className="h-5 w-5 text-gray-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
 
-  {/* Smooth dropdown: keep mounted + animate height & opacity */}
-  <CollapsibleContent
-    forceMount
-    className="overflow-hidden bg-white rounded-b-xl transition-[max-height,opacity] duration-500 ease-in-out
+                {/* Smooth dropdown: keep mounted + animate height & opacity */}
+                <CollapsibleContent
+                  forceMount
+                  className="overflow-hidden bg-white rounded-b-xl transition-[max-height,opacity] duration-500 ease-in-out
                data-[state=closed]:max-h-0 data-[state=open]:max-h-[1000px]
                data-[state=closed]:opacity-0 data-[state=open]:opacity-100"
-  >
-    <div className="p-4 space-y-4">
-      {/* Answers */}
-      <div className="p-3 border rounded-md bg-red-50 text-red-900">
-        <strong>Your Answer:</strong>{" "}
-        {item.userAns || <span className="italic text-gray-500">No answer given</span>}
-      </div>
-      <div className="p-3 border rounded-md bg-green-50 text-green-900">
-        <strong>Correct Answer:</strong>{" "}
-        {item.correctAns || <span className="italic text-gray-500">No correct answer provided</span>}
-      </div>
+                >
+                  <div className="p-4 space-y-4">
+                    {/* Answers */}
+                    <div className="p-3 border rounded-md bg-red-50 text-red-900">
+                      <strong>Your Answer:</strong>{" "}
+                      {item.userAns || <span className="italic text-gray-500">No answer given</span>}
+                    </div>
+                    <div className="p-3 border rounded-md bg-green-50 text-green-900">
+                      <strong>Correct Answer:</strong>{" "}
+                      {item.correctAns || <span className="italic text-gray-500">No correct answer provided</span>}
+                    </div>
 
-      {/* Rating */}
-      <div>
-        <div className="flex justify-between mb-1 items-center">
-          <span className="font-medium text-gray-700">Rating: {ratingNum}/10</span>
-          <span className={`px-3 py-1 rounded-full text-sm ${perf.color} transform transition-transform duration-300 ease-in-out hover:scale-105`}>
-            {perf.label}
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div
-            className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${(ratingNum / 10) * 100}%` }}
-          />
-        </div>
-      </div>
+                    {/* Rating */}
+                    <div>
+                      <div className="flex justify-between mb-1 items-center">
+                        <span className="font-medium text-gray-700">Rating: {ratingNum}/10</span>
+                        <span className={`px-3 py-1 rounded-full text-sm ${perf.color} transform transition-transform duration-300 ease-in-out hover:scale-105`}>
+                          {perf.label}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-out"
+                          style={{ width: `${(ratingNum / 10) * 100}%` }}
+                        />
+                      </div>
+                    </div>
 
-      {/* Strengths */}
-      {strengthPoints.length > 0 ? (
-        <div className="p-3 border rounded-md bg-green-50 text-green-900">
-          <strong>Strengths:</strong>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            {strengthPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                {point.trim()}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <div className="p-3 border rounded-md bg-gray-50 text-gray-500 italic">
-          No strengths identified for this question
-        </div>
-      )}
+                    {/* Strengths */}
+                    {strengthPoints.length > 0 ? (
+                      <div className="p-3 border rounded-md bg-green-50 text-green-900">
+                        <strong>Strengths:</strong>
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          {strengthPoints.map((point, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              {point.trim()}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="p-3 border rounded-md bg-gray-50 text-gray-500 italic">
+                        No strengths identified for this question
+                      </div>
+                    )}
 
-      {/* Areas for Improvement */}
-      {feedbackPoints.length > 0 ? (
-        <div className="p-3 border rounded-md bg-yellow-50 text-yellow-900">
-          <strong>Areas for Improvement:</strong>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            {feedbackPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                {point.trim()}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <div className="p-3 border rounded-md bg-gray-50 text-gray-500 italic">
-          No improvement points for this question
-        </div>
-      )}
-    </div>
-  </CollapsibleContent>
-</Collapsible>
+                    {/* Areas for Improvement */}
+                    {feedbackPoints.length > 0 ? (
+                      <div className="p-3 border rounded-md bg-yellow-50 text-yellow-900">
+                        <strong>Areas for Improvement:</strong>
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          {feedbackPoints.map((point, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                              {point.trim()}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="p-3 border rounded-md bg-gray-50 text-gray-500 italic">
+                        No improvement points for this question
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
 
 
