@@ -86,7 +86,7 @@ export default function Header() {
             className="flex items-center gap-2 bg-gray-100/80 px-3 py-1 rounded-full hover:shadow-md transition-all duration-200"
           >
             <UserIcon className="w-6 h-6 text-gray-700" />
-            <span className="text-sm font-medium">{user.name}</span>
+            <span className="text-sm font-medium text-blue-500">{user.name}</span>
           </button>
 
           <AnimatePresence>

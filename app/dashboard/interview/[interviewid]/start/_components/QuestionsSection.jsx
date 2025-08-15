@@ -32,7 +32,7 @@ function QuestionsSection({ mockInterviewQuestion, activeQuestionIndex }) {
           <h2
             key={index}
             className={`p-2 rounded-full text-xs md:text-sm text-center cursor-pointer
-            ${activeQuestionIndex === index ? 'bg-blue-500 text-white' : 'bg-secondary'}`}
+            ${activeQuestionIndex === index ? 'bg-blue-600 text-white' : 'bg-secondary'}`}
           >
             Question {index + 1}
           </h2>
@@ -44,13 +44,13 @@ function QuestionsSection({ mockInterviewQuestion, activeQuestionIndex }) {
           {mockInterviewQuestion[activeQuestionIndex]?.question}
         </h2>
         <Volume2
-          className='cursor-pointer text-blue-500 hover:text-blue-700 mt-20 mr-1 size-8'
+          className='cursor-pointer text-blue-600 hover:text-blue-700 mt-20 mr-1 size-8'
           onClick={() => textToSpeech(mockInterviewQuestion[activeQuestionIndex]?.question)}
         />
       </div>
 
       <div className='border rounded-lg p-5 bg-blue-100 mt-10'>
-        <h2 className='flex gap-2 items-center text-blue-400'>
+        <h2 className='flex gap-2 items-center text-blue-600'>
           <Lightbulb />
           <strong>Note:</strong>
         </h2>

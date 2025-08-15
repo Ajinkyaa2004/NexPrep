@@ -130,7 +130,7 @@ Interview Difficulty: ` + selectedDifficulty + `
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg("⚠️ Our AI is currently busy. Please try again in a moment.");
+      setErrorMsg("⚠️ Our AI engine is busy right now. Please try again in a few minutes.");
       setTimeout(() => setErrorMsg(""), 5000); // hide after 5s
     }
 

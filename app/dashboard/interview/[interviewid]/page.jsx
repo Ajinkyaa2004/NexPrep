@@ -92,6 +92,18 @@ function InterviewPage() {
               <strong className="font-bold text-gray-800">Job Role:</strong>{' '}
               {interviewData.jobPosition}
             </p>
+            <p className="mt-1">
+              <strong className="font-bold text-gray-800 ">Experience:</strong>{' '}
+              {interviewData.jobExperience}
+            </p>
+            <p className='mt-1'>
+              <strong className="font-bold text-gray-800 ">Selected Duration:</strong>{' '}
+              {interviewData.selectedDuration}
+            </p>
+            <p className='mt-1'>
+              <strong className="font-bold text-gray-800 mt-5">Difficulty Level:</strong>{' '}
+              {interviewData.selectedDifficulty}
+            </p>
 
             <div className="mt-2 overflow-y-auto max-h-72 sm:max-h-80 md:max-h-96 p-2 border rounded-md">
               <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap break-words">
@@ -99,14 +111,7 @@ function InterviewPage() {
               </p>
             </div>
 
-            <p className="mt-2">
-              <strong className="font-bold text-gray-800 ">Experience:</strong>{' '}
-              {interviewData.jobExperience}
-            </p>
-            <p>
-              <strong className="font-bold text-gray-800 mt-5">Difficulty Level:</strong>{' '}
-              {interviewData.selectedDifficulty}
-            </p>
+            
           </div>
 
           <div className="w-full flex justify-center md:justify-start mt-4">

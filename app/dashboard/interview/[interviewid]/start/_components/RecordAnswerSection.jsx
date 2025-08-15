@@ -10,7 +10,7 @@ import { chatSession } from '../../../../../../utils/GeminiAIModal';
 import { UserAnswer } from '../../../../../../utils/schema.js';
 import moment from 'moment';
 import { db } from '../../../../../../utils/db';
-import { SpeechProvider } from '@speechly/react-client';
+// import { SpeechProvider } from '@speechly/react-client';
 
 function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, interviewData }) {
   const [userAnswer, setUserAnswer] = useState('');
