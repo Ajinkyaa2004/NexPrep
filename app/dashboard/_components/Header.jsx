@@ -60,7 +60,9 @@ export default function Header() {
             whileHover={{ scale: 1.1 }}
             transition={{ duration: 0.2 }}
             className={`relative cursor-pointer text-sm font-medium text-gray-500 tracking-wide ${
-              path === item.path ? 'text-blue-600 font-bold' : ''
+              item.label === 'Dashboard' || path === item.path
+                ? 'text-blue-600 font-bold after:w-full'
+                : ''
             } hover:text-blue-600 after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-600 after:left-0 after:bottom-0 after:transition-all after:duration-300 hover:after:w-full`}
           >
             {item.label}
@@ -125,7 +127,7 @@ export default function Header() {
               <li
                 key={index}
                 className={`px-4 py-2 cursor-pointer text-gray-700 font-medium ${
-                  path === item.path ? 'text-blue-600 font-bold' : ''
+                  item.label === 'Dashboard' || path === item.path ? 'text-blue-600 font-bold underline' : ''
                 } hover:text-blue-600`}
               >
                 {item.label}
