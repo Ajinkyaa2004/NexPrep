@@ -1,4 +1,4 @@
-# AI Mock Interview Platform
+# NexPrep AI Mock Interview Platform
 
 An AI-powered mock interview platform that simulates real-time voice-based interviews using Vapi voice agents or using react-speech-recognition. Built with Next.js, ShadCN UI, Firebase, Tailwind CSS, and TypeScript.
 
