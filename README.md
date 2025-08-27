@@ -29,7 +29,7 @@ An AI-powered mock interview platform that simulates real-time voice-based inter
 <img src="Screenshot 2025-08-27 at 10.37.31 AM.png" width="800" />
 
 ### 📊 Dashboard
-<img src="./Screenshot 2025-08-27 at 10.37.10 AM.png" width="800" />
+<img src="Screenshot 2025-08-27 at 10.37.10 AM.png" width="800" />
 
 ### 🎤 Interview Session
 <img src="Screenshot 2025-08-27 at 10.37.02 AM.png AM.png" width="800" />
