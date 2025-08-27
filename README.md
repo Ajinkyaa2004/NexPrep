@@ -1,29 +1,22 @@
-Nexprep 🎯
+🚀 Nexprep – AI Mock Interview Platform
 
-Nexprep is an AI-based Mock Interview Platform built to help users practice and prepare for interviews through real-time, interactive, and personalized experiences. It provides unlimited interview simulations, instant feedback, and a modern user-friendly interface.
+An AI-powered mock interview platform that helps users practice unlimited interviews with instant feedback. Built with Next.js, React, Tailwind CSS, Firebase, and Drizzle ORM for a modern, fast, and scalable experience.
 
-🚀 Tech Stack
+✨ Features
 
-Frontend: Next.js
- + React
+🎤 AI-driven mock interviews – practice real-time Q&A sessions
 
-Styling: Tailwind CSS
+📝 Instant feedback on performance and improvement suggestions
+🔐 Secure authentication with Firebase
+🎨 Clean, minimal UI/UX inspired by Linear’s design (grey-white theme)
+⚡ Blazing-fast performance with Next.js + Tailwind CSS
+📊 Structured database handling with Drizzle ORM
 
-Database & ORM: Firebase
- + Drizzle ORM
+🛠 Tech Stack
+⚛️ Next.js + React – Frontend framework
+🎨 Tailwind CSS – Styling and responsiveness
+🔒 Firebase – Auth & Hosting
+🗄️ Drizzle ORM – Database layer
 
-Authentication & Hosting: Firebase Auth + Firebase Hosting
+🔗 https://itsajinkya.vercel.app | 📫 https://www.linkedin.com/in/ajinkya2004
 
-📌 Features
-
-🎤 AI-powered mock interviews – practice unlimited sessions.
-
-📝 Instant feedback with suggestions to improve answers.
-
-🔒 Secure authentication with Firebase.
-
-🎨 Modern UI/UX inspired by Linear design (grey-white theme).
-
-⚡ Fast & optimized with Next.js and Tailwind.
-
-📊 Structured data handling with Drizzle ORM.
