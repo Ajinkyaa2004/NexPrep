@@ -1,41 +1,29 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Nexprep 🎯
 
-## Getting Started
+Nexprep is an AI-based Mock Interview Platform built to help users practice and prepare for interviews through real-time, interactive, and personalized experiences. It provides unlimited interview simulations, instant feedback, and a modern user-friendly interface.
 
-First, run the development server:
+🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Frontend: Next.js
+ + React
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Styling: Tailwind CSS
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Database & ORM: Firebase
+ + Drizzle ORM
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Authentication & Hosting: Firebase Auth + Firebase Hosting
 
-## Learn More
+📌 Features
 
-To learn more about Next.js, take a look at the following resources:
+🎤 AI-powered mock interviews – practice unlimited sessions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+📝 Instant feedback with suggestions to improve answers.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🔒 Secure authentication with Firebase.
 
-## Deploy on Vercel
+🎨 Modern UI/UX inspired by Linear design (grey-white theme).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+⚡ Fast & optimized with Next.js and Tailwind.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# NexPrep
-AI-powered mock interview platform built with Next.js, ShadCN UI, Drizzle ORM, Tailwind CSS, Javascript, and Vapi for real-time voice interactions.
->>>>>>> a577de27d9eaaa8cb8bd587da301801d6313b713
+📊 Structured data handling with Drizzle ORM.
