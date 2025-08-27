@@ -36,5 +36,8 @@ An AI-powered mock interview platform that simulates real-time voice-based inter
 <img src="Screenshot 2025-08-27 at 10.37.20 AM.png" width="800" />
 
 
+🔗 Live Demo: https://nexprep-ai.vercel.app/auth/sign-in
+
+
 
 🔗 https://itsajinkya.vercel.app | 📫 https://www.linkedin.com/in/ajinkya2004
