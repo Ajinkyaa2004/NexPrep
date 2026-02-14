@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ui/*": ["components/ui/*"],
+      "@components/*": ["app/dashboard/_components/*"]
+    }
+  }
+}
