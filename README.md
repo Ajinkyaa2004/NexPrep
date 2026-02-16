@@ -1,452 +1,914 @@
-# NexPrep AI Mock Interview Platform
+<div align="center">
 
-An AI-powered mock interview platform that simulates real-time voice-based interviews with intelligent feedback, ATS resume checker, and resume builder. Built with Next.js 15, React 19, Firebase, MongoDB, and Google Gemini AI.
+# 🎯 NexPrep AI
 
-## 🚀 Features
+### *AI-Powered Mock Interview Platform with Intelligent Feedback & Resume Optimization*
 
-### Core Features
-- 🎤 **AI-Powered Mock Interviews** - Real-time voice-based interviews using react-speech-to-text and browser speech synthesis
-- 🤖 **Intelligent Question Generation** - AI generates custom interview questions based on job position, experience, and description  
-- 📊 **Detailed Feedback & Analytics** - Get comprehensive feedback with ratings, suggestions, and performance metrics
-- 🎯 **Multiple Interview Modes** - Choose between Easy, Medium, or Hard difficulty levels
-- ⏱️ **Flexible Duration** - Select interview duration (15, 30, 45, or 60 minutes)
-- 📹 **Video Recording** - Webcam recording during interviews for self-review
+[![Next.js](https://img.shields.io/badge/Next.js-15.4-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Latest-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-12.0-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 
-### Additional Tools
-- 📄 **ATS Resume Checker** - Upload your resume (PDF/DOCX) and get AI-powered ATS compatibility analysis
-- ✏️ **Resume Builder** - Create professional resumes with 4 beautiful templates (Modern, Professional, Creative, Executive)
-- 📈 **Dashboard Analytics** - Track your progress with stats on interviews completed, questions solved, and average scores
-- 🔐 **Secure Authentication** - Firebase-based user authentication with email/password
-- 💾 **Cloud Storage** - All interview data stored securely in MongoDB
+[Features](#-features) • [Quick Start](#-quick-start) • [Tech Stack](#-tech-stack) • [Documentation](#-documentation) • [Contributing](#-contributing)
+
+---
+
+<!-- 
+🎨 ADD YOUR BANNER IMAGE HERE
+![NexPrep AI Banner](./public/banner.png)
+-->
+
+</div>
+
+## 📖 Overview
+
+**NexPrep AI** is a cutting-edge mock interview platform that leverages AI to simulate real-world interview scenarios. Get personalized feedback, optimize your resume for ATS systems, and build professional resumes—all in one place. Perfect for job seekers preparing for technical interviews, behavioral assessments, and career transitions.
+
+### Why This Platform?
+
+| Feature | Description |
+|---------|-------------|
+| 🎤 **Real-Time Voice Interviews** | Conduct natural voice-based interviews with AI using speech-to-text and synthesis technology |
+| 🤖 **Smart Question Generation** | AI generates tailored questions based on job role, experience level, and difficulty |
+| 📊 **Actionable Feedback** | Receive detailed performance metrics, ratings, and improvement suggestions after each interview |
+| 📄 **ATS Resume Checker** | Analyze your resume for ATS compatibility with rule-based scoring and AI insights |
+| ✏️ **Professional Resume Builder** | Create stunning resumes with 4 customizable templates (Modern, Professional, Creative, Executive) |
+| 🔐 **Secure & Private** | Firebase authentication with encrypted data storage in MongoDB |
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/NexPrep-main.git
+cd NexPrep-main
+
+# Install dependencies
+npm install
+
+# Set up environment variables (see .env.local example below)
+cp .env.example .env.local
+
+# Run development server
+npm run dev
+# Visit http://localhost:3000
+```
+
+> 📚 For detailed setup instructions, see [Installation Guide](#-installation)
+
+---
+
+<details>
+<summary>🖼️ <strong>View Screenshots</strong></summary>
+
+<!-- 
+Add your screenshots here:
+![Dashboard](./screenshots/dashboard.png)
+![Interview](./screenshots/interview.png)
+![ATS Checker](./screenshots/ats-checker.png)
+![Resume Builder](./screenshots/resume-builder.png)
+-->
+
+</details>
+
+---
+
+## 📑 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Project Structure](#-project-structure)
+- [Deployment](#-deployment)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [Support](#-support)
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### 🎤 Interview System
+- **AI Mock Interviews**
+  - Voice-based real-time interactions
+  - Customizable duration (15/30/45/60 min)
+  - Three difficulty levels (Easy/Medium/Hard)
+  - Webcam recording support
+  - Automatic question generation
+  
+- **Intelligent Feedback**
+  - Detailed performance analytics
+  - Rating system (1-10 scale)
+  - Improvement suggestions
+  - Historical tracking
+
+### 📊 Dashboard & Analytics
+- Interview history tracking
+- Performance metrics visualization
+- Questions solved counter
+- Average score calculations
+- Quick action cards
+
+</td>
+<td valign="top" width="50%">
+
+### 📄 Resume Tools
+- **ATS Checker**
+  - PDF & DOCX support
+  - Rule-based scoring (Structure, Impact, Skills)
+  - Missing sections detection
+  - Contact info validation
+  - Actionable recommendations
+  
+- **Resume Builder**
+  - 4 professional templates
+  - Real-time preview
+  - Customizable sections
+  - Export-ready formats
+  - Template switching
+
+### 🔐 User Management
+- Firebase email/password authentication
+- Secure session management
+- User-specific data isolation
+- Profile management
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🛠 Tech Stack
 
-- **Framework:** Next.js 15.4.1 (with Turbopack)
-- **React:** 19.1.0
-- **UI Components:** ShadCN UI, Radix UI
-- **Styling:** Tailwind CSS, Framer Motion
-- **Authentication:** Firebase Auth
-- **Database:** MongoDB with Mongoose
-- **AI:** Google Gemini AI
-- **Voice:** react-speech-to-text, Browser Web Speech API
-- **File Parsing:** pdf-parse, mammoth (for DOCX)
-- **Deployment:** Vercel
+### Core Technologies
 
-## 📋 Prerequisites
+![Next.js](https://img.shields.io/badge/Next.js-15.4-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-Before you begin, ensure you have the following installed:
-- Node.js (v18 or higher)
-- npm or yarn
-- Git
+### Backend & Database
 
-## 🔧 Installation & Setup
+![MongoDB](https://img.shields.io/badge/MongoDB-Latest-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Mongoose](https://img.shields.io/badge/Mongoose-9.2-880000?style=for-the-badge&logo=mongoose&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-12.0-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-### 1. Clone the Repository
+### AI & Integrations
+
+![Google AI](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Grok API](https://img.shields.io/badge/Grok_API-xAI-000000?style=for-the-badge&logo=x&logoColor=white)
+
+---
+
+<details>
+<summary><strong>📋 Complete Technology Breakdown</strong></summary>
+
+### Frontend
+| Technology | Purpose | Version |
+|------------|---------|---------|
+| **Next.js** | React framework with SSR/SSG | 15.4.1 |
+| **React** | UI library | 19.2.4 |
+| **TypeScript** | Type safety | 5.8.3 |
+| **Tailwind CSS** | Utility-first styling | Latest |
+| **Framer Motion** | Animations | 12.23.9 |
+| **Radix UI** | Headless UI components | Latest |
+| **Lucide React** | Icon library | 0.525.0 |
+| **React Webcam** | Camera integration | 7.2.0 |
+
+### Backend & Database
+| Technology | Purpose |
+|------------|---------|
+| **MongoDB** | NoSQL database |
+| **Mongoose** | ODM for MongoDB |
+| **Firebase Auth** | User authentication |
+| **Firebase Admin** | Server-side Firebase SDK |
+
+### AI & Processing
+| Technology | Purpose |
+|------------|---------|
+| **Grok API (xAI)** | Primary AI for question generation |
+| **Google Gemini AI** | Alternative AI provider |
+| **react-speech-to-text** | Voice input |
+| **Web Speech API** | Text-to-speech synthesis |
+
+### File Processing
+| Technology | Purpose |
+|------------|---------|
+| **pdf-parse** | PDF parsing |
+| **mammoth** | DOCX parsing |
+
+### DevOps & Deployment
+| Technology | Purpose |
+|------------|---------|
+| **Vercel** | Hosting & CI/CD |
+| **Turbopack** | Fast bundler (dev) |
+| **ESLint** | Code linting |
+
+</details>
+
+---
+
+## 🏗 Architecture
+
+```mermaid
+graph TB
+    A[User Browser] -->|HTTPS| B[Next.js Frontend]
+    B -->|Route Handlers| C[API Routes]
+    C -->|Authentication| D[Firebase Auth]
+    C -->|Data Queries| E[MongoDB]
+    C -->|AI Requests| F[Grok API / Gemini AI]
+    B -->|Real-time Voice| G[Web Speech API]
+    B -->|File Upload| H[File Parser]
+    H -->|PDF/DOCX| C
+    E -->|Mongoose ODM| I[Data Models]
+    
+    style A fill:#61DAFB,stroke:#333,stroke-width:2px
+    style B fill:#000000,stroke:#333,stroke-width:2px,color:#fff
+    style D fill:#FFCA28,stroke:#333,stroke-width:2px
+    style E fill:#47A248,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#4285F4,stroke:#333,stroke-width:2px,color:#fff
+```
+
+### Design Patterns
+
+| Pattern | Implementation | Purpose |
+|---------|---------------|---------|
+| **Server Actions** | `app/actions/*.js` | Server-side data mutations with Next.js 15 |
+| **Component Composition** | Radix UI + ShadCN | Reusable, accessible UI components |
+| **Singleton Pattern** | `firebase/client.js`, `utils/mongodb.js` | Single database/auth instance |
+| **Factory Pattern** | `utils/GeminiAIModal.js` | AI provider abstraction |
+| **MVC Architecture** | Models (`utils/models.js`) + Controllers (Actions) + Views (Components) | Separation of concerns |
+
+---
+
+## 📥 Installation
+
+### Prerequisites
+
+- **Node.js** >= 18.0.0
+- **npm** or **yarn**
+- **MongoDB Atlas** account (free tier available)
+- **Firebase** project
+- **AI API Key** (Grok/Gemini)
+
+---
+
+### 1️⃣ Clone Repository
+
 ```bash
 git clone https://github.com/yourusername/NexPrep-main.git
 cd NexPrep-main
 ```
 
-### 2. Install Dependencies
+---
+
+### 2️⃣ Install Dependencies
+
 ```bash
 npm install
 # or
 yarn install
 ```
 
-### 3. Environment Variables
+---
 
-Create a `.env.local` file in the root directory and add the following variables:
+### 3️⃣ Environment Configuration
+
+Create a `.env.local` file in the root directory:
 
 ```env
-# MongoDB Database
-MONGODB_URI=your_mongodb_connection_string
-NEXT_PUBLIC_MONGODB_URI=your_mongodb_connection_string
+# MongoDB
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nexprep
+NEXT_PUBLIC_MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nexprep
 
-# Google Gemini AI
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+# AI Provider (Choose one or both)
+NEXT_PUBLIC_GROK_API_KEY=xai-xxxxxxxxxxxxxx
+# OR
+NEXT_PUBLIC_GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxx
 
-# Firebase Admin SDK (for server-side)
-FIREBASE_PROJECT_ID=your_firebase_project_id
-FIREBASE_CLIENT_EMAIL=your_firebase_client_email
-FIREBASE_PRIVATE_KEY=your_firebase_private_key
+# Firebase Admin SDK (Server-side)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYourPrivateKey\n-----END PRIVATE KEY-----\n"
 
-# Firebase Client Config
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+# Firebase Client (Public)
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyxxxxxxxxxxxxx
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789012
+NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
 ```
 
-**Important Notes:**
-- Get your MongoDB connection string from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-- Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-- Firebase credentials can be obtained from your [Firebase Console](https://console.firebase.google.com/)
+**Where to get credentials:**
+- 🗄️ MongoDB: [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+- 🤖 Grok API: [xAI Console](https://console.x.ai/)
+- 🤖 Gemini AI: [Google AI Studio](https://makersuite.google.com/app/apikey)
+- 🔥 Firebase: [Firebase Console](https://console.firebase.google.com/) → Project Settings → Service Accounts
 
-### 4. Database Setup
+---
 
-The project uses MongoDB with Mongoose. The database models are defined in `utils/models.js`. No migration is needed - the collections will be created automatically when you first run the application.
+### 4️⃣ Database Setup
 
-### 5. Seed Demo Data (Optional)
-
-To populate the database with demo interviews and feedback:
 ```bash
+# Optional: Seed demo data
 node scripts/seed_demo_feedback.mjs
 ```
 
-### 6. Run the Development Server
+The MongoDB collections (`mockinterviews`, `useranswers`) will be created automatically on first run.
+
+---
+
+### 5️⃣ Run Development Server
+
 ```bash
 npm run dev
+# or
+yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🚀 Available Scripts
+---
 
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+<details>
+<summary><strong>🐳 Docker Setup (Alternative)</strong></summary>
 
-## 🔑 Getting API Keys & Setup
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
 
-### MongoDB Atlas
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free cluster
-3. Create a database user and whitelist your IP (or allow access from anywhere for development)
-4. Get your connection string (replace `<password>` with your actual password)
-5. Add to `MONGODB_URI` in `.env.local`
+WORKDIR /app
 
-### Google Gemini AI
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create an API key
-3. Add to `NEXT_PUBLIC_GEMINI_API_KEY` in `.env.local`
+COPY package*.json ./
+RUN npm install
 
-### Firebase
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable Authentication (Email/Password)
-4. Get your Firebase config from Project Settings
-5. For Firebase Admin, generate a service account key (Settings > Service Accounts > Generate new private key)
-6. Add credentials to `.env.local`
+COPY . .
 
-## 📁 Project Structure
+RUN npm run build
 
-```
-NexPrep-main/
-├── app/                          # Next.js app directory
-│   ├── auth/                     # Authentication pages
-│   │   ├── sign-in/
-│   │   └── sign-up/
-│   ├── dashboard/                # Main dashboard
-│   │   ├── _components/          # Dashboard components
-│   │   ├── ats-checker/          # ATS Resume Checker
-│   │   ├── interview/            # Interview pages
-│   │   │   └── [interviewid]/
-│   │   │       ├── feedback/     # Feedback display
-│   │   │       └── start/        # Interview session
-│   │   ├── questions/            # Questions library
-│   │   ├── resume/               # Resume builder
-│   │   └── upgrade/              # Upgrade plans
-│   ├── globals.css
-│   ├── layout.js
-│   └── page.js
-├── components/                   # Reusable UI components
-│   └── ui/                       # ShadCN UI components
-├── firebase/                     # Firebase configuration
-│   ├── admin.js
-│   └── client.js
-├── utils/                        # Utility functions
-│   ├── db.js                     # Database connection
-│   ├── GeminiAIModal.js          # AI chat session
-│   ├── GeminiATS.js              # ATS analysis
-│   └── schema.js                 # Database schema
-├── public/                       # Static assets
-└── scripts/                      # Database seed scripts
+EXPOSE 3000
+
+CMD ["npm", "start"]
 ```
 
-## 🎯 Key Features Explained
-
-### Mock Interview Flow
-1. User creates a new interview from dashboard
-2. Provides job details (position, description, experience, difficulty)
-3. AI generates relevant interview questions
-4. User answers questions via voice or text
-5. AI analyzes responses and provides detailed feedback with ratings
-
-### ATS Resume Checker
-1. Upload resume (PDF or DOCX format)
-2. AI analyzes for ATS compatibility
-3. Get detailed feedback on:
-   - Overall ATS score
-   - Keyword optimization
-   - Format compatibility
-   - Section analysis
-   - Actionable improvements
-
-### Resume Builder
-1. Choose from 4 professional templates
-2. Fill in your details with an intuitive editor
-3. Real-time preview
-4. Export as PDF
-
-### 🔐 Authentication
-<img src="Screenshot 2025-08-27 at 10.36.13 AM.png" width="800" />
-
-### 🏠 Landing Page
-<img src="Screenshot 2025-08-27 at 10.36.43 AM.png" width="800" />
-
-### ⚙️ Settings
-<img src="Screenshot 2025-08-27 at 10.37.31 AM.png" width="800" />
-
-### 🎤 Interview Session
-<img src="Screenshot 2025-08-27 at 10.37.02 AM.png" width="800" />
-<img src="Screenshot 2025-08-27 at 10.37.10 AM.png" width="700"/>
-
-### 📝 Feedback & Reports
-<img src="Screenshot 2025-08-27 at 10.37.20 AM.png" width="800" />
-
-## 🐛 Known Issues & Security Considerations
-
-⚠️ **FIXED:** The hardcoded Firebase credentials and database URL have been moved to environment variables.
-
-### Fixed Issues:
-1. ✅ **Environment Variables** - All sensitive credentials now use `.env.local`
-2. ✅ **Security Patches** - Reduced vulnerabilities from 8 to 5
-3. ✅ **Duplicate Folder** - Removed nested `NexPrep-main/` directory
-
-### Remaining Issues:
-1. **Next.js Security Update** (CRITICAL) - Update to Next.js 15.5.12 to fix security vulnerabilities
-2. **Minor esbuild vulnerabilities** - Dev-only, not critical for production
-
-## 🔧 Troubleshooting
-
-### Environment Variables Not Loading
-
-If you see errors like "NEXT_PUBLIC_OPENROUTER_API_KEY environment variable is not set":
-
-1. **Verify `.env.local` exists:**
-   ```bash
-   ls -la .env.local
-   ```
-
-2. **Check file content:**
-   ```bash
-   cat .env.local
-   ```
-
-3. **Restart the development server:**
-   ```bash
-   pkill -9 node             # Kill all node processes
-   rm -rf .next              # Clear Next.js cache
-   npm run dev               # Start fresh
-   ```
-
-4. **If still not working, try running without Turbopack:**
-   ```bash
-   next dev     # Instead of next dev --turbopack
-   ```
-
-### Port Already in Use
-
-If you see "Port 3000 is in use":
 ```bash
-lsof -ti:3000 | xargs kill -9   # Kill process on port 3000
-npm run dev                      # Restart server
+# Build and run
+docker build -t nexprep-ai .
+docker run -p 3000:3000 --env-file .env.local nexprep-ai
 ```
 
-### Database Connection Errors
-
-If you see "No database connection string provided":
-1. Double-check your `.env.local` file has `NEXT_PUBLIC_DRIZZLE_DB_URL`
-2. Restart the dev server with cache clear (see above)
-3. Verify the Neon database is accessible
-
-## ✅ Recommended Improvements
-
-### ✅ Completed
-1. ✅ **Environment Variables for Firebase Client** - Moved to environment variables with fallbacks
-2. ✅ **Database Connection Security** - Removed hardcoded URL   
-3. ✅ **Security Patches** - Fixed 3/8 vulnerabilities (jws, node-forge, tar)
-4. ✅ **Project Structure** - Cleaned up duplicate nested folder
-
-### High Priority
-5. **Next.js Security Update** ⚠️  CRITICAL
-   - Update from 15.4.1 to 15.5.12
-   - Run: `npm install next@15.5.12`
-   - Fixes multiple security vulnerabilities (RCE, DoS, SSRF)
-
-6. **Remaining Security Patches**
-   - 2 moderate esbuild vulnerabilities (dev-only)
-   - Consider running `npm audit fix --force` (may cause breaking changes)
-
-7. **Error Handling**
-   - Add comprehensive error boundaries
-   - Improve API error handling with user-friendly messages
-
-4. **Loading States**
-   - Add skeleton loaders for better UX
-   - Implement proper loading states for all async operations
-
-### Medium Priority
-5. **Database Connection Hardcoding**
-   - Remove hardcoded database URL from `utils/db.js`
-   - Use environment variable only
-
-6. **Export Functionality**
-   - Add PDF export for interview feedback
-   - Add download option for resume (currently only preview available)
-
-7. **Mobile Responsiveness**
-   - Improve mobile layout for interview session
-   - Test and optimize for tablet devices
-
-8. **Interview Features**
-   - Add ability to pause/resume interviews
-   - Save draft interviews for later completion
-   - Add interview history with filtering/search
-
-### Nice to Have
-9. **Analytics Dashboard**
-   - Add charts for performance trends over time
-   - Compare performance across different job roles
-   - Add weekly/monthly progress reports
-
-10. **Social Features**
-    - Share interview results (anonymously)
-    - Add leaderboards
-    - Practice with friends
-
-11. **Additional Interview Types**
-    - Behavioral interview mode
-    - System design interviews
-    - Coding interview integration
-
-12. **Accessibility**
-    - Add keyboard navigation
-    - Improve screen reader support
-    - Add high contrast mode
-
-13. **Internationalization**
-    - Add multi-language support
-    - Localized interview questions
-
-14. **Email Notifications**
-    - Send interview completion emails
-    - Weekly progress summaries
-    - Reminders for scheduled practice
-
-## 🔒 Environment Variables Checklist
-
-Before deploying to production, ensure you have:
-
-- [ ] Created `.env.local` file
-- [ ] Added `NEXT_PUBLIC_DRIZZLE_DB_URL`
-- [ ] Added `NEXT_PUBLIC_OPENROUTER_API_KEY`
-- [ ] Added Firebase Admin credentials (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`)
-- [ ] (Optional but recommended) Moved Firebase client config to environment variables
-- [ ] Added `.env.local` to `.gitignore`
-
-## 🚀 Deploying to Vercel
-
-### Prerequisites for Deployment
-1. A Vercel account ([sign up here](https://vercel.com))
-2. MongoDB Atlas database set up and accessible
-3. All API keys ready (Firebase, Gemini)
-
-### Step-by-Step Deployment
-
-1. **Push your code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Prepare for deployment"
-   git push origin main
-   ```
-
-2. **Import to Vercel**
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
-   - Click "Add New Project"
-   - Import your GitHub repository
-   - Select the repository
-
-3. **Configure Environment Variables**
-   In the Vercel project settings, add all environment variables from your `.env.local`:
-   - `MONGODB_URI` - Your MongoDB connection string
-   - `NEXT_PUBLIC_MONGODB_URI` - Same MongoDB connection string
-   - `NEXT_PUBLIC_GEMINI_API_KEY` - Your Gemini API key
-   - `FIREBASE_PROJECT_ID` - Firebase project ID
-   - `FIREBASE_CLIENT_EMAIL` - Firebase service account email
-   - `FIREBASE_PRIVATE_KEY` - Firebase private key (include quotes and `\n` for line breaks)
-   - `NEXT_PUBLIC_FIREBASE_API_KEY` - Firebase API key
-   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` - Firebase auth domain
-   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID` - Firebase project ID
-   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
-   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
-   - `NEXT_PUBLIC_FIREBASE_APP_ID` - Firebase app ID
-
-4. **Deploy**
-   - Click "Deploy"
-   - Vercel will automatically build and deploy your application
-   - Once deployed, you'll get a production URL
-
-5. **Configure Firebase for Production**
-   - Go to Firebase Console > Authentication > Settings
-   - Add your Vercel domain to authorized domains
-
-6. **Configure MongoDB Atlas for Production**
-   - Go to MongoDB Atlas > Network Access
-   - Add `0.0.0.0/0` to allow connections from Vercel (or use Vercel's IP ranges for better security)
-
-### Troubleshooting Deployment
-
-**Build Errors:**
-- Check that all environment variables are set correctly
-- Ensure `MONGODB_URI` doesn't have any special characters that need URL encoding
-- For `FIREBASE_PRIVATE_KEY`, make sure newlines are preserved as `\n`
-
-**Runtime Errors:**
-- Check Vercel function logs for detailed error messages
-- Verify MongoDB connection string is accessible from Vercel
-- Ensure Firebase authorized domains include your Vercel domain
-
-**Database Connection Issues:**
-- MongoDB Atlas: Check IP whitelist settings
-- Test connection string locally first
-- Ensure database user has proper permissions
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 👨‍💻 Developer
-
-Created by Ajinkya
-
-🔗 Live Demo: https://nexprep-ai.vercel.app/auth/sign-in
-
-🔗 Portfolio: https://itsajinkya.vercel.app  
-📫 LinkedIn: https://www.linkedin.com/in/ajinkya2004
-
-## 🙏 Acknowledgments
-
-- ShadCN UI for the beautiful component library
-- Vercel for hosting
-- Google Gemini AI for intelligent responses
-- MongoDB Atlas for cloud database
-- Firebase for authentication
+</details>
 
 ---
 
-**Note:** This is an educational project. Please ensure you comply with all API terms of service and data protection regulations when deploying to production.
+<details>
+<summary><strong>🔧 Common Installation Issues</strong></summary>
+
+**Issue:** `Module not found: Can't resolve 'firebase'`
+```bash
+# Solution: Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Issue:** `Firebase: Error (auth/invalid-api-key)`
+```bash
+# Solution: Check that NEXT_PUBLIC_FIREBASE_API_KEY is correctly set
+# Ensure no extra spaces or quotes in .env.local
+```
+
+**Issue:** `MongooseServerSelectionError`
+```bash
+# Solution: Whitelist your IP in MongoDB Atlas
+# Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0)
+```
+
+**Issue:** `Grok API Error: 401 Unauthorized`
+```bash
+# Solution: Verify your API key
+# Ensure NEXT_PUBLIC_GROK_API_KEY starts with 'xai-'
+```
+
+</details>
+
+---
+
+## 🎯 Usage
+
+### Interview Workflow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant D as Dashboard
+    participant AI as AI Engine
+    participant DB as Database
+    participant V as Voice System
+
+    U->>D: Create New Interview
+    D->>AI: Generate Questions (Job Details)
+    AI-->>D: Return Interview Questions
+    D->>DB: Save Interview
+    U->>V: Start Voice Interview
+    V->>U: Ask Question (Speech Synthesis)
+    U->>V: Answer (Speech-to-Text)
+    V->>AI: Analyze Answer
+    AI-->>V: Return Feedback & Rating
+    V->>DB: Save User Answer
+    U->>D: View Feedback Report
+```
+
+---
+
+### Step-by-Step Guide
+
+#### 1️⃣ Create Mock Interview
+
+1. Navigate to **Dashboard**
+2. Click **"+ Add New Interview"**
+3. Fill in:
+   - **Job Position** (e.g., "Frontend Developer")
+   - **Job Description** (paste JD or key responsibilities)
+   - **Years of Experience**
+   - **Location** (optional)
+   - **Duration** (15/30/45/60 minutes)
+   - **Difficulty** (Easy/Medium/Hard)
+4. Click **"Start Interview"**
+
+#### 2️⃣ Conduct Interview
+
+1. Click **"Start Recording"** to enable webcam
+2. Grant microphone & camera permissions
+3. Click on each question to hear it read aloud
+4. Speak your answer clearly
+5. Click **"Stop Recording"** when done
+6. Review your recorded answer
+7. Click **"Submit & Get Feedback"**
+8. View AI-generated feedback and ratings
+
+#### 3️⃣ Check ATS Score
+
+1. Go to **"ATS Checker"** tab
+2. Upload your resume (PDF/DOCX)
+3. Review your score breakdown:
+   - Structure (15%)
+   - Impact (25%)
+   - Skills (30%)
+   - Style (20%)
+   - Brevity (10%)
+4. Read detailed suggestions
+5. Download optimized resume
+
+#### 4️⃣ Build Resume
+
+1. Navigate to **"Resume Builder"**
+2. Select a template
+3. Fill in your details:
+   - Personal Info
+   - Professional Summary
+   - Experience
+   - Education
+   - Skills
+   - Projects
+4. Preview in real-time
+5. Export or print
+
+---
+
+### Configuration Parameters
+
+| Parameter | Options | Description |
+|-----------|---------|-------------|
+| **Interview Duration** | 15, 30, 45, 60 min | Total interview time |
+| **Difficulty Level** | Easy, Medium, Hard | Question complexity |
+| **Interview Mode** | Voice, Text | Input method (Voice recommended) |
+| **Voice Language** | en-US, en-GB, etc. | Speech synthesis language |
+
+---
+
+<details>
+<summary><strong>⚙️ Advanced Configuration</strong></summary>
+
+### Custom AI Prompts
+
+Edit [`utils/GeminiAIModal.js`](utils/GeminiAIModal.js) to customize AI behavior:
+
+```javascript
+export const chatSession = {
+  sendMessage: async (inputPrompt) => {
+    // Modify temperature (0.0 - 1.0)
+    // Higher = more creative, Lower = more focused
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      body: JSON.stringify({
+        model: "grok-beta",
+        temperature: 0.7, // Adjust here
+        // ... rest of config
+      })
+    });
+  }
+};
+```
+
+### Database Schema Customization
+
+Modify [`utils/models.js`](utils/models.js) to add custom fields:
+
+```javascript
+const MockInterviewSchema = new mongoose.Schema({
+  // Add your custom fields
+  customField: { type: String, maxlength: 500 },
+  // ... existing fields
+});
+```
+
+</details>
+
+---
+
+## 📂 Project Structure
+
+```
+NexPrep-main/
+│
+├── app/                          # Next.js App Router
+│   ├── actions/                  # Server Actions
+│   │   └── interview.js          # Interview CRUD operations
+│   ├── auth/                     # Authentication pages
+│   │   ├── sign-in/
+│   │   └── sign-up/
+│   ├── dashboard/                # Main application
+│   │   ├── _components/          # Dashboard components
+│   │   │   ├── AddNewInterview.jsx      # Interview creation modal
+│   │   │   ├── InterviewList.jsx        # Interview history
+│   │   │   └── Header.jsx               # Top navigation
+│   │   ├── ats-checker/          # ATS resume analysis
+│   │   │   └── _actions/
+│   │   │       ├── analyze.js    # Rule-based ATS scoring
+│   │   │       └── fileParser.js # PDF/DOCX parsing
+│   │   ├── interview/
+│   │   │   └── [interviewid]/
+│   │   │       ├── start/        # Interview conduct page
+│   │   │       └── feedback/     # Results & analytics
+│   │   ├── questions/            # Question bank
+│   │   ├── resume/               # Resume builder
+│   │   │   └── _components/
+│   │   │       └── templates/    # 4 resume templates
+│   │   └── upgrade/              # Pricing (if applicable)
+│   ├── globals.css               # Global styles
+│   ├── layout.js                 # Root layout
+│   └── page.js                   # Home (redirects to sign-in)
+│
+├── components/                   # Shared UI components
+│   └── ui/                       # ShadCN UI components
+│       ├── button.jsx
+│       ├── dialog.jsx
+│       ├── input.jsx
+│       └── ...
+│
+├── firebase/                     # Firebase configuration
+│   ├── admin.js                  # Server-side SDK
+│   └── client.js                 # Client-side SDK
+│
+├── lib/
+│   └── utils.js                  # Utility functions (cn helper)
+│
+├── public/                       # Static assets
+│
+├── scripts/                      # Database seeding scripts
+│   ├── seed.mjs
+│   ├── seed_feedback.mjs
+│   └── seed_demo_feedback.mjs
+│
+├── utils/                        # Core utilities
+│   ├── db.js                     # Database connection helper
+│   ├── GeminiAIModal.js          # AI provider abstraction
+│   ├── GeminiATS.js              # ATS AI analysis
+│   ├── models.js                 # Mongoose schemas
+│   ├── mongodb.js                # MongoDB singleton
+│   └── schema.js                 # Validation schemas
+│
+├── .env.local                    # Environment variables (create this)
+├── components.json               # ShadCN UI config
+├── jsconfig.json                 # JavaScript config
+├── next.config.mjs               # Next.js configuration
+├── package.json                  # Dependencies
+├── postcss.config.mjs            # PostCSS config
+├── tailwind.config.js            # Tailwind CSS config
+└── tsconfig.json                 # TypeScript config
+```
+
+---
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/NexPrep-main)
+
+1. Push your code to GitHub
+2. Import project to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy automatically
+
+**Environment Variables:**
+- Go to **Project Settings** → **Environment Variables**
+- Add all variables from `.env.local`
+- Redeploy
+
+---
+
+### Other Platforms
+
+<details>
+<summary><strong>Netlify</strong></summary>
+
+```bash
+npm run build
+```
+
+Add `netlify.toml`:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+</details>
+
+<details>
+<summary><strong>Docker + Cloud Run</strong></summary>
+
+```bash
+# Build
+docker build -t nexprep-ai .
+
+# Tag
+docker tag nexprep-ai gcr.io/YOUR_PROJECT/nexprep-ai
+
+# Push
+docker push gcr.io/YOUR_PROJECT/nexprep-ai
+
+# Deploy to Cloud Run
+gcloud run deploy nexprep-ai \
+  --image gcr.io/YOUR_PROJECT/nexprep-ai \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+
+</details>
+
+---
+
+### Production Checklist
+
+- [ ] Set `NODE_ENV=production`
+- [ ] Enable Firebase Auth production mode
+- [ ] Whitelist production domain in Firebase Console
+- [ ] Update MongoDB IP whitelist
+- [ ] Configure CORS if using custom domain
+- [ ] Enable HTTPS
+- [ ] Set up error monitoring (Sentry, LogRocket)
+- [ ] Configure CDN for static assets
+- [ ] Test all API endpoints in production
+- [ ] Set up backup strategy for MongoDB
+
+---
+
+## 🧪 Testing
+
+### Run Tests
+
+```bash
+# Frontend tests
+npm run test
+
+# End-to-end tests (if configured)
+npm run test:e2e
+
+# Linting
+npm run lint
+```
+
+### Manual Testing Checklist
+
+**Authentication**
+- [ ] Sign up with email/password
+- [ ] Sign in with existing account
+- [ ] Sign out functionality
+- [ ] Protected routes redirect to sign-in
+
+**Interview Flow**
+- [ ] Create new interview
+- [ ] Start interview session
+- [ ] Record voice answers
+- [ ] Submit answers and get feedback
+- [ ] View feedback report
+
+**ATS Checker**
+- [ ] Upload PDF resume
+- [ ] Upload DOCX resume
+- [ ] View ATS score breakdown
+- [ ] Download suggestions
+
+**Resume Builder**
+- [ ] Switch between templates
+- [ ] Enter resume data
+- [ ] Preview updates in real-time
+- [ ] Export resume
+
+---
+
+## 📚 Documentation
+
+- [Installation Guide](#-installation)
+- [Usage Guide](#-usage)
+- [API Reference](#-architecture) (See Server Actions in `app/actions/`)
+- [Contributing Guidelines](#-contributing)
+- [Troubleshooting](#common-installation-issues)
+
+---
+
+## 🗺 Roadmap
+
+### ✅ Completed
+
+- [x] AI-powered mock interviews with voice input
+- [x] Real-time feedback and rating system
+- [x] ATS resume checker with rule-based scoring
+- [x] Resume builder with 4 templates
+- [x] Firebase authentication
+- [x] MongoDB data persistence
+- [x] Dashboard analytics
+- [x] Webcam recording support
+
+### 🚧 In Progress
+
+- [ ] Multi-language support (i18n)
+- [ ] Advanced analytics dashboard with charts
+- [ ] Email notifications for interview reminders
+- [ ] Export interview transcripts to PDF
+- [ ] Mobile app (React Native)
+
+### 📅 Planned
+
+- [ ] Video-based interviews (recorded video analysis)
+- [ ] Peer-to-peer mock interviews
+- [ ] Interview marketplace (connect with mentors)
+- [ ] AI-powered resume optimization (automatic rewriting)
+- [ ] Integration with job boards (LinkedIn, Indeed)
+- [ ] Company-specific interview prep (FAANG, MAANG)
+- [ ] Behavioral interview questions database
+- [ ] Progress tracking with gamification
+- [ ] Chrome extension for quick practice
+- [ ] Slack/Discord bot for interview reminders
+
+**Want a feature?** [Open an issue](https://github.com/yourusername/NexPrep-main/issues/new) or contribute!
+
+---
+
+## 🤝 Contributing
+
+<div align="center">
+
+![Contributors](https://img.shields.io/github/contributors/yourusername/NexPrep-main?style=for-the-badge)
+![Issues](https://img.shields.io/github/issues/yourusername/NexPrep-main?style=for-the-badge)
+![Pull Requests](https://img.shields.io/github/issues-pr/yourusername/NexPrep-main?style=for-the-badge)
+
+</div>
+
+We welcome contributions! Follow these steps:
+
+### 1️⃣ Fork the Repository
+
+Click the **Fork** button at the top right of this page.
+
+### 2️⃣ Clone Your Fork
+
+```bash
+git clone https://github.com/YOUR_USERNAME/NexPrep-main.git
+cd NexPrep-main
+```
+
+### 3️⃣ Create a Feature Branch
+
+```bash
+git checkout -b feature/amazing-feature
+```
+
+### 4️⃣ Make Your Changes
+
+- Write clean, readable code
+- Follow existing code style
+- Add comments for complex logic
+- Test your changes locally
+
+### 5️⃣ Commit Your Changes
+
+```bash
+git add .
+git commit -m "feat: add amazing feature"
+```
+
+**Commit Convention:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `style:` Code style changes (formatting)
+- `refactor:` Code refactoring
+- `test:` Adding tests
+- `chore:` Maintenance tasks
+
+### 6️⃣ Push to Your Fork
+
+```bash
+git push origin feature/amazing-feature
+```
+
+### 7️⃣ Open a Pull Request
+
+- Go to the original repository
+- Click **"New Pull Request"**
+- Select your branch
+- Describe your changes clearly
+- Submit for review
+
+---
+
+### Contribution Guidelines
+
+| Do ✅ | Don't ❌ |
+|-------|----------|
+| Write descriptive commit messages | Commit directly to `main` |
+| Test your changes thoroughly | Submit untested code |
+| Update documentation if needed | Introduce breaking changes without discussion |
+| Follow existing code patterns | Ignore linting errors |
+| Keep PRs focused and small | Bundle multiple unrelated changes |
+| Be respectful in discussions | Use offensive language |
+
+---
+
+### Development Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Run in development mode
+npm run dev
+
+# Build for production
+npm run build
+
+# Run production build locally
+npm run start
+
+# Lint code
+npm run lint
+```
+
+---
+
+## 💬 Support
+
+- **Documentation**: Read the [Usage Guide](#-usage)
+- **Issues**: Report bugs or request features on [GitHub Issues](https://github.com/yourusername/NexPrep-main/issues)
+
+---
+
+## 📄 License
+
+<div align="center">
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+### Made with ❤️ by [Ajinkya](https://github.com/ajinkya2004)
+
+🔗 **Live Demo**: [https://nexprep-ai.vercel.app](https://nexprep-ai.vercel.app/auth/sign-in)  
+🔗 **Portfolio**: [https://itsajinkya.vercel.app](https://itsajinkya.vercel.app)  
+📫 **LinkedIn**: [linkedin.com/in/ajinkya2004](https://www.linkedin.com/in/ajinkya2004)
+
+⭐ **Star this repo** if you find it helpful!
+
+[Back to Top](#-nexprep-ai)
+
+</div>
