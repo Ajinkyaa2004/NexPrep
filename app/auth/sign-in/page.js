@@ -6,36 +6,12 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '../../../components/ui/button';
 import { auth } from '../../../firebase/client';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-
-const containerVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 30 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 90,
-      damping: 15,
-      delay: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: 0.2 + i * 0.1,
-      duration: 0.4,
-    },
-  }),
-};
+import AuthShell from '../_components/AuthShell';
+import FloatingInput from '../_components/FloatingInput';
 
 export default function SignIn() {
   const router = useRouter();
@@ -45,102 +21,91 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Welcome back! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1000);
+      setTimeout(() => router.push('/dashboard'), 800);
     } catch (error) {
       console.error('Signin error:', error.message);
-      toast.error(error.message || 'Sign in failed');
-    } finally {
+      const map = {
+        'auth/invalid-credential': 'Invalid email or password.',
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+      };
+      toast.error(map[error.code] || 'Sign in failed. Please try again.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white bg-[url('/grid.svg')] bg-cover">
+    <AuthShell>
       <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="backdrop-blur-xl border border-gray-200 bg-white/80 shadow-xl rounded-3xl p-10 w-full max-w-md"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        {/* Logo */}
-        <motion.div className="flex justify-center mb-4" variants={itemVariants} custom={0}>
-          <Image src="/logo.svg" alt="Site Logo" width={200} height={20} className="rounded-lg" />
-        </motion.div>
+        {/* Mobile logo */}
+        <div className="lg:hidden flex justify-center mb-8">
+          <Image src="/logo.svg" alt="NexPrep" width={150} height={44} priority className="h-10 w-auto" />
+        </div>
 
-        {/* Heading */}
-        <motion.h1
-          className="text-2xl font-semibold text-center text-blue-500 mb-1"
-          variants={itemVariants}
-          custom={1}
-        >
-          Welcome Back
-        </motion.h1>
-        <motion.p
-          className="text-sm text-center text-gray-500 mb-8"
-          variants={itemVariants}
-          custom={2}
-        >
-          Sign in to continue your journey!
-        </motion.p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome back</h1>
+          <p className="text-gray-500 mt-2">Sign in to continue your interview prep journey.</p>
+        </div>
 
-        <motion.form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-          initial="hidden"
-          animate="visible"
-        >
-          {[3, 4].map((i) => (
-            <motion.div key={i} className="relative group" variants={itemVariants} custom={i}>
-              <input
-                type={i === 4 ? 'password' : 'email'}
-                id={i === 4 ? 'password' : 'email'}
-                required
-                className="w-full px-4 pt-6 pb-1 text-sm bg-transparent border border-gray-300 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent peer transition"
-                placeholder=" "
-                value={i === 4 ? password : email}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (i === 4) setPassword(val);
-                  else setEmail(val);
-                }}
-              />
-              <label
-                htmlFor={i === 4 ? 'password' : 'email'}
-                className="absolute left-4 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-sm peer-focus:text-blue-500"
-              >
-                {i === 4 ? 'Password' : 'Email Address'}
-              </label>
-            </motion.div>
-          ))}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FloatingInput
+            id="email"
+            label="Email Address"
+            type="email"
+            icon={Mail}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
+          <FloatingInput
+            id="password"
+            label="Password"
+            type="password"
+            icon={Lock}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
 
-          {/* Submit Button */}
-          <motion.div variants={itemVariants} custom={5}>
-            <Button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-md rounded-xl py-2 text-base font-medium transition"
-            >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </motion.div>
-        </motion.form>
+          <div className="flex justify-end">
+            <span className="text-sm text-gray-400 cursor-default select-none">Forgot password?</span>
+          </div>
 
-        {/* Footer */}
-        <motion.p
-          className="text-sm text-center text-gray-500 mt-6"
-          variants={itemVariants}
-          custom={6}
-        >
-          Don’t have an account?{' '}
-          <Link href="/auth/sign-up" className="text-blue-500 hover:underline">
-            Sign up here
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#4A6CFF] to-[#8393FF] hover:from-[#3D5CF0] hover:to-[#7384FF] text-white text-base font-semibold shadow-lg shadow-[#4A6CFF]/25 hover:shadow-[#4A6CFF]/40 transition-all duration-300 group"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" /> Signing in...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                Sign In
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+            )}
+          </Button>
+        </form>
+
+        <p className="text-sm text-center text-gray-500 mt-8">
+          Don&apos;t have an account?{' '}
+          <Link href="/auth/sign-up" className="text-[#4A6CFF] font-semibold hover:underline">
+            Sign up for free
           </Link>
-        </motion.p>
+        </p>
       </motion.div>
-    </div>
+    </AuthShell>
   );
 }

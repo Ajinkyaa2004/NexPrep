@@ -124,13 +124,16 @@ function InterviewPage() {
       </div>
 
       {/* Info Card */}
-      <div className="mt-10 md:mt-40 relative w-full">
-        <div className="md:absolute bottom-5 left-5 p-5 border rounded-lg border-yellow-100 bg-yellow-100 max-w-sm">
+      <div className="mt-10 w-full max-w-5xl">
+        <div className="p-5 border rounded-lg border-yellow-200 bg-yellow-50 w-full md:max-w-md">
           <h2 className="flex gap-2 items-center text-yellow-600 mb-2">
             <Lightbulb />
             <strong>Information</strong>
           </h2>
-          <p className="text-sm text-gray-800 mt">{process.env.NEXT_PUBLIC_INFORMATION}</p>
+          <p className="text-sm text-gray-800">
+            {process.env.NEXT_PUBLIC_INFORMATION ||
+              "Enable your webcam and microphone to begin. You'll be asked a series of questions — answer them out loud, and our AI will analyze your responses and generate detailed feedback at the end."}
+          </p>
         </div>
       </div>
     </div>

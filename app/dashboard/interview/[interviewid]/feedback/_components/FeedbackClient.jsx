@@ -9,6 +9,63 @@ import {
 import { ChevronsUpDown, CheckCircle, AlertTriangle, Target, Home } from "lucide-react";
 import { Button } from "../../../../../../components/ui/button";
 
+/**
+ * Renders an AI feedback string (which uses **Header**: body markers) as a clean
+ * bulleted list with bold section titles, instead of a raw markdown blob.
+ */
+function FeedbackReport({ text }) {
+    if (!text || typeof text !== "string") {
+        return <p className="text-gray-500 text-sm">No feedback available.</p>;
+    }
+
+    const parts = text.split(/\*\*(.+?)\*\*/g);
+    const preface = (parts[0] || "").replace(/^[:\s-]+/, "").trim();
+    const sections = [];
+    for (let i = 1; i < parts.length; i += 2) {
+        const header = (parts[i] || "").replace(/:$/, "").trim();
+        const body = (parts[i + 1] || "").replace(/^[:\s-]+/, "").trim();
+        if (header) sections.push({ header, body });
+    }
+
+    if (sections.length === 0) {
+        return <p className="text-gray-600 text-sm whitespace-pre-line">{text}</p>;
+    }
+
+    const recColor = (val) => {
+        const v = (val || "").toLowerCase();
+        if (v.includes("strong")) return "bg-green-100 text-green-700";
+        if (v.includes("moderate")) return "bg-yellow-100 text-yellow-700";
+        if (v.includes("need") || v.includes("improv")) return "bg-red-100 text-red-700";
+        return "bg-gray-100 text-gray-700";
+    };
+
+    return (
+        <div className="space-y-2.5">
+            {preface && <p className="text-gray-600 text-sm">{preface}</p>}
+            <ul className="space-y-2.5">
+                {sections.map((s, idx) => {
+                    const isRec = /final recommendation|recommendation/i.test(s.header);
+                    return (
+                        <li key={idx} className="flex gap-2.5">
+                            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                            <p className="text-sm leading-relaxed">
+                                <span className="font-semibold text-gray-800">{s.header}: </span>
+                                {isRec ? (
+                                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${recColor(s.body)}`}>
+                                        {s.body}
+                                    </span>
+                                ) : (
+                                    <span className="text-gray-600">{s.body}</span>
+                                )}
+                            </p>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    );
+}
+
 export default function FeedbackClient({ feedbackList }) {
     // --- Statistics Calculation ---
     const totalQuestions = feedbackList.length;
@@ -151,26 +208,38 @@ export default function FeedbackClient({ feedbackList }) {
                         </div>
                     </div>
 
-                    {/* Progress Bar Section */}
-                    <div className="bg-green-50 border border-green-200 p-6 rounded-xl mb-10 flex items-center justify-between">
-                        <div>
-                            <h4 className="text-green-800 font-bold text-lg mb-1">Interview Capability Forecast</h4>
-                            <p className="text-green-700 text-sm">Based on your answers, you are performing efficiently.</p>
-                        </div>
-                        <div className="w-1/2 hidden md:block">
-                            <div className="flex justify-between text-xs text-green-700 mb-1">
-                                <span>Current Skill</span>
-                                <span>Target Potential</span>
+                    {/* Progress Bar Section — colour + copy reflect the real score */}
+                    {(() => {
+                        const tier = overallRatingNum >= 8
+                            ? { box: "bg-green-50 border-green-200", head: "text-green-800", sub: "text-green-700", track: "bg-green-200", bar: "bg-green-600", pct: "text-green-800", lbl: "text-green-600",
+                                msg: "Strong performance — you're well prepared for the real interview." }
+                            : overallRatingNum >= 5
+                            ? { box: "bg-yellow-50 border-yellow-200", head: "text-yellow-800", sub: "text-yellow-700", track: "bg-yellow-200", bar: "bg-yellow-500", pct: "text-yellow-800", lbl: "text-yellow-600",
+                                msg: "Decent attempt — review the flagged questions to sharpen weak areas." }
+                            : { box: "bg-red-50 border-red-200", head: "text-red-800", sub: "text-red-700", track: "bg-red-200", bar: "bg-red-500", pct: "text-red-800", lbl: "text-red-600",
+                                msg: "Needs work — focus on the low-scoring questions and practise again." };
+                        return (
+                            <div className={`${tier.box} border p-6 rounded-xl mb-10 flex items-center justify-between`}>
+                                <div>
+                                    <h4 className={`${tier.head} font-bold text-lg mb-1`}>Interview Capability Forecast</h4>
+                                    <p className={`${tier.sub} text-sm`}>{tier.msg}</p>
+                                </div>
+                                <div className="w-1/2 hidden md:block">
+                                    <div className={`flex justify-between text-xs ${tier.sub} mb-1`}>
+                                        <span>Current Skill</span>
+                                        <span>Target Potential</span>
+                                    </div>
+                                    <div className={`w-full ${tier.track} rounded-full h-3`}>
+                                        <div className={`${tier.bar} h-3 rounded-full transition-all duration-1000`} style={{ width: `${percentage}%` }}></div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`text-3xl font-bold ${tier.pct}`}>{percentage.toFixed(0)}%</span>
+                                    <span className={`${tier.lbl} text-sm block`}>Readiness</span>
+                                </div>
                             </div>
-                            <div className="w-full bg-green-200 rounded-full h-3">
-                                <div className="bg-green-600 h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-3xl font-bold text-green-800">{percentage.toFixed(0)}%</span>
-                            <span className="text-green-600 text-sm block">Readiness</span>
-                        </div>
-                    </div>
+                        );
+                    })()}
 
                     {/* Detailed List Section */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -218,9 +287,18 @@ export default function FeedbackClient({ feedbackList }) {
                                                 </div>
                                             </div>
 
+                                            {item.strength && item.strength !== "N/A" && (
+                                                <div className="mt-4 bg-green-50 border border-green-100 rounded-lg p-4">
+                                                    <h5 className="text-xs font-bold text-green-600 uppercase mb-1.5 flex items-center gap-1.5">
+                                                        <CheckCircle className="w-3.5 h-3.5" /> Key Strength
+                                                    </h5>
+                                                    <p className="text-green-900 text-sm leading-relaxed">{item.strength}</p>
+                                                </div>
+                                            )}
+
                                             <div className="mt-4">
-                                                <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Feedback & Improvement</h5>
-                                                <p className="text-gray-600 text-sm">{item.feedback}</p>
+                                                <h5 className="text-xs font-bold text-gray-400 uppercase mb-3">Feedback & Improvement</h5>
+                                                <FeedbackReport text={item.feedback} />
                                             </div>
                                         </CollapsibleContent>
                                     </Collapsible>

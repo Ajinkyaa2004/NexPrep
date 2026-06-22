@@ -103,37 +103,44 @@ Interview Difficulty: ` + selectedDifficulty + `
   }
 }`;
 
-    // trimmed for clarity
     try {
-      const result = await chatSession.sendMessage(InputPrompt);
-      console.log(result);
-      const MockJsonResp = result.response.text().replace('```json', '').replace('```', '');
+      const aiResult = await chatSession.sendMessage(InputPrompt);
+      const MockJsonResp = aiResult.response.text().replace('```json', '').replace('```', '');
 
-      if (MockJsonResp) {
-        const result = await createInterview({
-          mockId: uuidv4(),
-          jsonMockResp: MockJsonResp,
-          jobPosition,
-          jobDescription,
-          jobExperience,
-          selectedDifficulty,
-          selectedDuration,
-          createdBy: user?.email || 'unknown',
-          createdAt: moment().format('DD-MM-yyyy'),
-        });
+      if (!MockJsonResp) {
+        throw new Error('The AI did not return any questions. Please try again.');
+      }
 
-        if (result.success) {
-          setOpenDialog(false);
-          router.push(`/dashboard/interview/${result.mockId}`);
-        }
+      const saveResult = await createInterview({
+        mockId: uuidv4(),
+        jsonMockResp: MockJsonResp,
+        jobPosition,
+        jobDescription,
+        jobExperience,
+        selectedDifficulty,
+        selectedDuration,
+        createdBy: user?.email || 'demo@gmail.com',
+        createdAt: moment().format('DD-MM-yyyy'),
+      });
+
+      if (saveResult.success) {
+        setOpenDialog(false);
+        router.push(`/dashboard/interview/${saveResult.mockId}`);
+      } else {
+        // Surface DB failures instead of silently doing nothing.
+        console.error('Save failed:', saveResult.error);
+        setErrorMsg(
+          `⚠️ Couldn't save your interview to the database. ${saveResult.error || ''} Please make sure MongoDB is running and configured.`
+        );
+        setTimeout(() => setErrorMsg(''), 8000);
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg("⚠️ Our AI engine is busy right now. Please try again in a few minutes.");
-      setTimeout(() => setErrorMsg(""), 5000); // hide after 5s
+      setErrorMsg('⚠️ Our AI engine is busy right now. Please try again in a few minutes.');
+      setTimeout(() => setErrorMsg(''), 6000);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

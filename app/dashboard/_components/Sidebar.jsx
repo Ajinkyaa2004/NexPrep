@@ -2,8 +2,10 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Video, FileText, BarChart2, ShieldCheck, Settings, LogOut, PlusCircle, PenBox } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
 import { auth } from "../../../firebase/client";
 
@@ -39,7 +41,9 @@ const menuList = [
 
 export default function Sidebar() {
     const path = usePathname();
+    const router = useRouter();
     const [user, setUser] = React.useState(null);
+    const [signingOut, setSigningOut] = React.useState(false);
 
     React.useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((u) => {
@@ -47,6 +51,19 @@ export default function Sidebar() {
         });
         return () => unsubscribe();
     }, []);
+
+    const handleSignOut = async () => {
+        try {
+            setSigningOut(true);
+            await signOut(auth);
+            toast.success("Signed out successfully");
+            router.push("/auth/sign-in");
+        } catch (error) {
+            console.error("Sign out error:", error);
+            toast.error("Failed to sign out. Please try again.");
+            setSigningOut(false);
+        }
+    };
 
     return (
         <div className="h-[96vh] w-72 bg-white/80 backdrop-blur-2xl border-r border-gray-200/50 flex flex-col p-6 fixed left-0 top-0 z-50 shadow-sm">
@@ -84,20 +101,27 @@ export default function Sidebar() {
                 <div className="flex items-center gap-3 mb-6 px-3 p-2 rounded-xl border border-transparent hover:border-gray-100 hover:bg-white transition-all cursor-pointer">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary/20 to-secondary/20 p-[2px]">
                         <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                            <span className="font-bold text-primary text-xs">U</span>
+                            <span className="font-bold text-primary text-xs uppercase">
+                                {(user?.displayName?.[0] || user?.email?.[0] || "U")}
+                            </span>
                         </div>
                     </div>
                     <div>
                         <div>
-                            <h4 className="font-bold text-sm text-gray-800">{user?.displayName || "User"}</h4>
-                            <p className="text-[10px] text-gray-400 font-medium truncate max-w-[150px]" title={user?.email}>{user?.email || "PREMIUM PLAN"}</p>
+                            <h4 className="font-bold text-sm text-gray-800">{user?.displayName || (user?.email ? user.email.split("@")[0] : "Guest User")}</h4>
+                            <p className="text-[10px] text-gray-400 font-medium truncate max-w-[150px]" title={user?.email}>{user?.email || "Explore Mode"}</p>
                         </div>
                     </div>
                 </div>
 
-                <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg py-5 text-sm">
+                <Button
+                    variant="ghost"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    className="w-full justify-start gap-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg py-5 text-sm"
+                >
                     <LogOut className="w-4 h-4 ml-1" />
-                    Sign Out
+                    {signingOut ? "Signing Out..." : "Sign Out"}
                 </Button>
             </div>
         </div>
