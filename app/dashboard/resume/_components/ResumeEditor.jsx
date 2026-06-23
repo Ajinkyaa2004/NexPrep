@@ -433,7 +433,7 @@ const ResumeEditor = ({ selectedTemplate, onBack }) => {
 
                 {/* Preview Section (Sticky/Scrollable) */}
                 <div className={`bg-gray-200 p-8 overflow-y-auto flex justify-center ${!previewMode ? 'hidden md:flex' : 'flex'}`}>
-                    <div className="bg-white shadow-2xl w-full max-w-[210mm] min-h-[297mm] origin-top transform scale-90 md:scale-100 transition-transform duration-200">
+                    <div className="resume-print-area bg-white shadow-2xl w-full max-w-[210mm] min-h-[297mm] origin-top transform scale-90 md:scale-100 transition-transform duration-200">
                         {renderTemplate()}
                     </div>
                 </div>
