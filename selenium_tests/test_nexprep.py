@@ -113,7 +113,8 @@ def authenticate(d):
     g = "Auth"
     try:
         d.get(BASE + "/auth/sign-in")
-        wait(d, By.ID, "email")
+        wait_clickable(d, By.ID, "email")
+        time.sleep(0.8)  # let the entrance animation settle
         d.find_element(By.ID, "email").send_keys(TEST_EMAIL)
         d.find_element(By.ID, "password").send_keys(TEST_PASS)
         find_btn_by_text(d, "Sign In").click()
@@ -126,7 +127,8 @@ def authenticate(d):
 
         # Account doesn't exist yet — create it.
         d.get(BASE + "/auth/sign-up")
-        wait(d, By.ID, "name")
+        wait_clickable(d, By.ID, "name")
+        time.sleep(0.8)
         d.find_element(By.ID, "name").send_keys("Selenium Tester")
         d.find_element(By.ID, "email").send_keys(TEST_EMAIL)
         d.find_element(By.ID, "password").send_keys(TEST_PASS)
@@ -159,21 +161,24 @@ def test_seo(d):
             record(g, f"{path} served", False, str(e)[:80])
 
 
-def test_root_redirect(d):
+def test_root_landing(d):
     g = "Routing"
     try:
         d.get(BASE + "/")
-        WebDriverWait(d, 10).until(lambda x: "/auth/sign-in" in x.current_url)
-        record(g, "/ redirects to sign-in", "/auth/sign-in" in d.current_url, d.current_url)
+        WebDriverWait(d, 10).until(lambda x: "ace your next" in body_text(x).lower())
+        t = body_text(d).lower()
+        record(g, "/ shows landing page", "ace your next" in t and "/auth" not in d.current_url, d.current_url)
+        record(g, "landing has Get started CTA", any("get started" in (b.text or "").lower() or "start practicing" in (b.text or "").lower() for b in d.find_elements(By.TAG_NAME, "a")))
     except Exception as e:
-        record(g, "/ redirects to sign-in", False, str(e)[:80])
+        record(g, "/ shows landing page", False, str(e)[:80])
 
 
 def test_sign_in(d):
     g = "SignIn"
     try:
         d.get(BASE + "/auth/sign-in")
-        wait(d, By.ID, "email")
+        wait_clickable(d, By.ID, "email")
+        time.sleep(0.8)  # let the entrance animation settle
         try:
             WebDriverWait(d, 8).until(lambda x: "welcome back" in body_text(x).lower())
             ok_heading = True
@@ -222,7 +227,8 @@ def test_sign_up(d):
     g = "SignUp"
     try:
         d.get(BASE + "/auth/sign-up")
-        wait(d, By.ID, "name")
+        wait_clickable(d, By.ID, "name")
+        time.sleep(0.8)  # let the entrance animation settle
         record(g, "page loads (Create your account)", "create your account" in body_text(d).lower())
         for fid in ["name", "email", "password", "confirm-password"]:
             record(g, f"{fid} input present", bool(d.find_elements(By.ID, fid)))
@@ -553,7 +559,7 @@ def main():
 
         # --- Public / logged-out checks ---
         test_seo(d)
-        test_root_redirect(d)
+        test_root_landing(d)
         test_sign_in(d)
         test_sign_up(d)
         test_auth_guard(d)
