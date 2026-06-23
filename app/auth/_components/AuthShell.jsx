@@ -1,8 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Sparkles, CheckCircle2, BrainCircuit, FileCheck2, BarChart3, ShieldCheck } from 'lucide-react';
+import { auth } from '../../../firebase/client';
 
 const features = [
   { icon: BrainCircuit, title: 'AI Mock Interviews', desc: 'Role-tailored questions generated in seconds.' },
@@ -24,6 +28,16 @@ const blob = {
  * Split-screen auth shell. Left = animated brand panel (lg+), right = form.
  */
 export default function AuthShell({ children }) {
+  const router = useRouter();
+
+  // If the visitor is already signed in, don't let them sit on the auth pages.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) router.replace('/dashboard');
+    });
+    return () => unsubscribe();
+  }, [router]);
+
   return (
     <div className="min-h-screen w-full flex bg-[#F2F4F7]">
       {/* LEFT — Brand panel */}

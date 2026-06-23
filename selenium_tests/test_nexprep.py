@@ -30,6 +30,10 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 BASE = os.environ.get("BASE_URL", "http://localhost:3000")
 TEST_MOCK_ID = "selenium-test-interview"
+# Dedicated test account used to exercise the auth-protected dashboard.
+# Created on first run; reused afterwards. Safe to delete from Firebase later.
+TEST_EMAIL = os.environ.get("TEST_EMAIL", "selenium.tester@example.com")
+TEST_PASS = os.environ.get("TEST_PASS", "SeleniumTest123!")
 
 results = []  # (group, name, ok, detail)
 
@@ -86,6 +90,59 @@ def body_text(d):
 # ----------------------------------------------------------------------------
 # Test groups
 # ----------------------------------------------------------------------------
+
+def test_auth_guard(d):
+    """Logged-out users must be redirected away from protected pages."""
+    g = "AuthGuard"
+    for path in ["/dashboard", "/dashboard/ats-checker", f"/dashboard/interview/{TEST_MOCK_ID}/start"]:
+        try:
+            d.get(BASE + path)
+            ok = False
+            try:
+                WebDriverWait(d, 8).until(lambda x: "/auth/sign-in" in x.current_url)
+                ok = True
+            except TimeoutException:
+                ok = "/auth/sign-in" in d.current_url
+            record(g, f"blocks {path} when logged out", ok, d.current_url)
+        except Exception as e:
+            record(g, f"blocks {path} when logged out", False, str(e)[:80])
+
+
+def authenticate(d):
+    """Sign in the test account (creating it on first run). Returns True on success."""
+    g = "Auth"
+    try:
+        d.get(BASE + "/auth/sign-in")
+        wait(d, By.ID, "email")
+        d.find_element(By.ID, "email").send_keys(TEST_EMAIL)
+        d.find_element(By.ID, "password").send_keys(TEST_PASS)
+        find_btn_by_text(d, "Sign In").click()
+        try:
+            WebDriverWait(d, 8).until(lambda x: "/dashboard" in x.current_url)
+            record(g, "sign in test account", True)
+            return True
+        except TimeoutException:
+            pass
+
+        # Account doesn't exist yet — create it.
+        d.get(BASE + "/auth/sign-up")
+        wait(d, By.ID, "name")
+        d.find_element(By.ID, "name").send_keys("Selenium Tester")
+        d.find_element(By.ID, "email").send_keys(TEST_EMAIL)
+        d.find_element(By.ID, "password").send_keys(TEST_PASS)
+        d.find_element(By.ID, "confirm-password").send_keys(TEST_PASS)
+        find_btn_by_text(d, "Create Account").click()
+        try:
+            WebDriverWait(d, 12).until(lambda x: "/dashboard" in x.current_url)
+            record(g, "create + sign in test account", True)
+            return True
+        except TimeoutException:
+            record(g, "create + sign in test account", False, "did not reach dashboard: " + d.current_url)
+            return False
+    except Exception as e:
+        record(g, "authenticate", False, str(e)[:100])
+        return False
+
 
 def test_seo(d):
     g = "SEO"
@@ -263,8 +320,13 @@ def test_questions(d):
     g = "Questions"
     try:
         d.get(BASE + "/dashboard/questions")
-        wait(d, By.XPATH, "//*[contains(text(),'Questions')]", 12)
-        record(g, "page loads", "questions" in body_text(d).lower())
+        ok = False
+        try:
+            WebDriverWait(d, 15).until(lambda x: "questions" in body_text(x).lower() and "loading your workspace" not in body_text(x).lower())
+            ok = True
+        except TimeoutException:
+            ok = "questions" in body_text(d).lower()
+        record(g, "page loads", ok)
     except Exception as e:
         record(g, "page loads", False, str(e)[:80])
 
@@ -403,7 +465,9 @@ def test_interview_start(d):
                     d.execute_script("arguments[0].click();", save)
                     ok = False
                     try:
-                        WebDriverWait(d, 25).until(lambda x: (find_btn_by_text(x, "Saved") is not None))
+                        # Gemini evaluation + multi-model fallback can take a while
+                        # when the free tier is degraded; allow generous time.
+                        WebDriverWait(d, 70).until(lambda x: (find_btn_by_text(x, "Saved") is not None))
                         ok = True
                     except TimeoutException:
                         ok = False
@@ -447,11 +511,9 @@ def test_feedback(d):
         record(g, "feedback", False, str(e)[:120])
 
 
-def test_console_errors(d):
-    """Check for severe browser console errors on the key pages."""
+def test_console_errors(d, pages):
+    """Check for severe browser console errors on the given pages."""
     g = "ConsoleErrors"
-    pages = ["/auth/sign-in", "/auth/sign-up", "/dashboard", "/dashboard/resume",
-             "/dashboard/ats-checker", f"/dashboard/interview/{TEST_MOCK_ID}/start"]
     # Flush any logs accumulated by earlier tests (e.g. the expected invalid-login 400).
     try:
         d.get_log("browser")
@@ -489,19 +551,31 @@ def main():
         d = webdriver.Chrome(options=caps_opts)
         d.set_page_load_timeout(40)
 
+        # --- Public / logged-out checks ---
         test_seo(d)
         test_root_redirect(d)
         test_sign_in(d)
         test_sign_up(d)
-        test_dashboard(d)
-        test_create_interview_dialog(d)
-        test_questions(d)
-        test_resume(d)
-        test_ats(d)
-        test_interview_detail(d)
-        test_interview_start(d)
-        test_feedback(d)
-        test_console_errors(d)
+        test_auth_guard(d)
+        test_console_errors(d, ["/auth/sign-in", "/auth/sign-up"])
+
+        # --- Authenticate, then protected checks ---
+        authed = authenticate(d)
+        if authed:
+            test_dashboard(d)
+            test_create_interview_dialog(d)
+            test_questions(d)
+            test_resume(d)
+            test_ats(d)
+            test_interview_detail(d)
+            test_interview_start(d)
+            test_feedback(d)
+            test_console_errors(d, ["/dashboard", "/dashboard/resume",
+                                    "/dashboard/ats-checker",
+                                    f"/dashboard/interview/{TEST_MOCK_ID}/start"])
+        else:
+            record("Auth", "protected tests skipped (auth failed)", False,
+                   "could not sign in/up the test account")
     finally:
         if d:
             d.quit()

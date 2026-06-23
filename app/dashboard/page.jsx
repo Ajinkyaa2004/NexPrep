@@ -27,17 +27,14 @@ function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      GetDashboardStats();
-    } else {
-      // Try to fetch stats even if user is not fully loaded yet (for demo data fallback)
+    if (user?.email) {
       GetDashboardStats();
     }
   }, [user]);
 
   const GetDashboardStats = async () => {
     setLoading(true);
-    const email = user?.email || "demo@gmail.com"; // Fallback to demo if not logged in, or just to get demo data.
+    const email = user?.email; // AuthGuard guarantees a signed-in user here.
 
     try {
       const { interviews, answers } = await getDashboardStats(email);

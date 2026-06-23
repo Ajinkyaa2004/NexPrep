@@ -109,10 +109,23 @@ export default function FeedbackClient({ feedbackList }) {
             </div>
 
             {feedbackList.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-xl shadow-sm">
-                    <h2 className="text-2xl text-gray-400 font-semibold mb-4">No Feedback Records Found</h2>
-                    <p className="text-gray-500 mb-8">Complete an interview to see your analytics here.</p>
-                    <Link href="/dashboard"><Button>Go to Dashboard</Button></Link>
+                <div className="text-center py-16 px-6 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
+                    <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-amber-50 flex items-center justify-center">
+                        <AlertTriangle className="w-8 h-8 text-amber-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-3">No Feedback Yet for This Interview</h2>
+                    <p className="text-gray-500 mb-2 leading-relaxed">
+                        It looks like the interview wasn&apos;t completed properly — no answers were recorded.
+                    </p>
+                    <p className="text-gray-500 mb-8 leading-relaxed">
+                        To generate feedback, start the interview and for <strong>each question</strong> either record
+                        your answer aloud or type it, then click <strong>&quot;Save Answer&quot;</strong> before moving on.
+                        Skipped questions won&apos;t produce a score.
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        <Link href="/dashboard"><Button variant="outline" className="gap-2"><Home className="w-4 h-4" /> Back to Dashboard</Button></Link>
+                        <Link href="/dashboard"><Button className="bg-primary hover:bg-primary/90 text-white">Start a New Interview</Button></Link>
+                    </div>
                 </div>
             ) : (
                 <>

@@ -16,14 +16,12 @@ export async function createInterview(data) {
 
 export async function getInterviewList(email) {
   try {
+    if (!email) return [];
     await dbConnect();
-    const interviews = await MockInterview.find({
-      $or: [
-        { createdBy: email },
-        { createdBy: "demo@gmail.com" }
-      ]
-    }).sort({ _id: -1 }).lean();
-    
+    const interviews = await MockInterview.find({ createdBy: email })
+      .sort({ _id: -1 })
+      .lean();
+
     return JSON.parse(JSON.stringify(interviews));
   } catch (error) {
     console.error('Error fetching interviews:', error);
@@ -69,22 +67,11 @@ export async function getFeedbackList(mockIdRef) {
 
 export async function getDashboardStats(email) {
   try {
+    if (!email) return { interviews: [], answers: [] };
     await dbConnect();
-    
-    const interviews = await MockInterview.find({
-      $or: [
-        { createdBy: email },
-        { createdBy: "demo@gmail.com" }
-      ]
-    }).lean();
 
-    const answers = await UserAnswer.find({
-      $or: [
-        { userEmail: email },
-        { userEmail: "demo@gmail.com" },
-        { userEmail: "test@gmail.com" }
-      ]
-    }).lean();
+    const interviews = await MockInterview.find({ createdBy: email }).lean();
+    const answers = await UserAnswer.find({ userEmail: email }).lean();
 
     return {
       interviews: JSON.parse(JSON.stringify(interviews)),
