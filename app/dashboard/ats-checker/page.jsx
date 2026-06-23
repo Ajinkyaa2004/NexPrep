@@ -5,7 +5,7 @@ import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
 import { Upload, Loader2, CheckCircle, AlertTriangle, FileText, ArrowRight, X, Check } from "lucide-react";
 import { parseResumeFile } from "./_actions/fileParser";
-import { analyzeResume } from "./_actions/analyze";
+import { analyzeResume, matchJobDescription } from "./_actions/analyze";
 import Link from 'next/link';
 import { toast } from "sonner";
 
@@ -13,6 +13,8 @@ const ATSChecker = () => {
     const [file, setFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [jobDescription, setJobDescription] = useState("");
+    const [jdMatch, setJdMatch] = useState(null);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -42,6 +44,15 @@ const ATSChecker = () => {
 
             const analysis = await analyzeResume(parseResult.text);
             setResult(analysis);
+
+            // Optional job-description match
+            if (jobDescription.trim().length >= 20) {
+                const match = await matchJobDescription(parseResult.text, jobDescription);
+                setJdMatch(match.success ? match.data : null);
+            } else {
+                setJdMatch(null);
+            }
+
             toast.success("Resume Analyzed!");
 
         } catch (error) {
@@ -129,6 +140,18 @@ const ATSChecker = () => {
 
 
 
+                    <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">
+                            Job Description <span className="text-gray-400 font-normal">(optional — paste to get a match score)</span>
+                        </label>
+                        <Textarea
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                            placeholder="Paste the job description here to see how well your resume matches its keywords..."
+                            className="w-full h-32 resize-none rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
                     <Button onClick={handleCheck} disabled={isLoading || !file} className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200">
                         {isLoading ? <><Loader2 className="mr-2 animate-spin" /> Analyizing Resume...</> : "Check Resume Score"}
                     </Button>
@@ -161,6 +184,47 @@ const ATSChecker = () => {
                                     <FileText className="w-64 h-64 text-blue-900" />
                                 </div>
                             </div>
+
+                            {/* Job Description Match */}
+                            {jdMatch && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                                            <Check className="w-5 h-5 text-blue-600" /> Job Description Match
+                                        </h4>
+                                        <span className={`text-2xl font-extrabold ${jdMatch.match_percentage >= 70 ? 'text-green-600' : jdMatch.match_percentage >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                            {jdMatch.match_percentage}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 rounded-full h-2 mb-5 overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ${jdMatch.match_percentage >= 70 ? 'bg-green-500' : jdMatch.match_percentage >= 40 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                                            style={{ width: `${jdMatch.match_percentage}%` }}
+                                        />
+                                    </div>
+                                    {jdMatch.matched_keywords?.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Matched keywords ({jdMatch.matched_keywords.length})</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {jdMatch.matched_keywords.map((k, i) => (
+                                                    <span key={i} className="px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-medium">{k}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {jdMatch.missing_keywords?.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Missing from your resume ({jdMatch.missing_keywords.length})</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {jdMatch.missing_keywords.map((k, i) => (
+                                                    <span key={i} className="px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-medium">{k}</span>
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-3">Consider adding the relevant missing keywords (where truthful) to better match this role.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Breakdown Grid */}
                             <div>

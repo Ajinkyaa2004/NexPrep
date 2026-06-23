@@ -1,6 +1,58 @@
 
 "use server";
 
+const JD_STOPWORDS = new Set([
+  "the", "and", "for", "with", "you", "your", "our", "are", "will", "that", "this", "have", "has",
+  "able", "ability", "work", "working", "team", "teams", "role", "job", "experience", "experienced",
+  "years", "year", "including", "include", "using", "use", "strong", "good", "excellent", "plus",
+  "must", "should", "would", "can", "all", "any", "who", "what", "when", "where", "how", "into",
+  "about", "across", "within", "such", "etc", "per", "via", "out", "not", "but", "they", "their",
+  "from", "they", "them", "été", "candidate", "candidates", "ideal", "looking", "join", "help",
+  "build", "building", "develop", "developing", "responsibilities", "requirements", "qualifications",
+  "preferred", "required", "skills", "knowledge", "understanding", "proficiency", "familiar",
+  "well", "more", "than", "also", "may", "new", "high", "level", "support", "ensure", "deliver",
+]);
+
+// Extracts the most meaningful keywords from a job description.
+function extractKeywords(text, limit = 25) {
+  const words = (text.toLowerCase().match(/[a-z][a-z0-9+.#-]{2,}/g) || []);
+  const freq = {};
+  for (const w of words) {
+    if (JD_STOPWORDS.has(w)) continue;
+    freq[w] = (freq[w] || 0) + 1;
+  }
+  return Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, limit);
+}
+
+export async function matchJobDescription(resumeText, jobDescription) {
+  try {
+    if (!jobDescription || jobDescription.trim().length < 20) {
+      return { success: false, error: "Please paste a longer job description." };
+    }
+    const keywords = extractKeywords(jobDescription);
+    if (keywords.length === 0) {
+      return { success: false, error: "Couldn't extract keywords from the job description." };
+    }
+    const resumeLower = (resumeText || "").toLowerCase();
+    const matched = keywords.filter((k) => resumeLower.includes(k));
+    const missing = keywords.filter((k) => !resumeLower.includes(k));
+    const matchPercentage = Math.round((matched.length / keywords.length) * 100);
+
+    return {
+      success: true,
+      data: {
+        match_percentage: matchPercentage,
+        matched_keywords: matched,
+        missing_keywords: missing,
+        total_keywords: keywords.length,
+      },
+    };
+  } catch (error) {
+    console.error("JD match error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function analyzeResume(resumeText) {
     try {
         console.log("Starting Rule-Based Analysis. Text length:", resumeText.length);
