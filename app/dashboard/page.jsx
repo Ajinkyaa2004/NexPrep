@@ -2,9 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import AddNewInterview from './_components/AddNewInterview';
 import InterviewList from './_components/InterviewList';
-import { UserCheck, Zap, TrendingUp, Clock, Activity } from "lucide-react";
-
-// Actually, I should just rewrite the whole block.
+import { UserCheck, Zap, TrendingUp, Clock, Activity, Award, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 import { auth } from '../../firebase/client';
 import { getDashboardStats } from '../actions/interview';
@@ -13,9 +11,13 @@ function Dashboard() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     totalInterviews: 0,
-    averageScore: 0,
+    averageScore: 0,   // percentage (0-100)
     questionsSolved: 0,
-    streak: 0
+    streak: 0,
+    bestScore: 0,      // 0-10
+    level: "Beginner",
+    trend: [],         // per-interview average ratings (0-10), oldest -> newest
+    improvement: 0,    // last vs first interview average (0-10)
   });
   const [loading, setLoading] = useState(true);
 
@@ -42,37 +44,39 @@ function Dashboard() {
       const totalInt = interviews.length;
       const totalQ = answers.length;
 
-      // Calculate Average Rating
-      const totalRating = answers.reduce((sum, item) => sum + (Number(item.rating) || 0), 0);
-      const avgScore = totalQ > 0 ? (totalRating / totalQ).toFixed(1) : 0;
-      // Convert to percentage roughly: (avg / 5) * 100 or (avg / 10) * 100 depending on rating scale.
-      // In FeedbackClient it used /10. Previous screenshot showed 85%.
-      // Let's assume rating is out of 5 for now? Or 10?
-      // Seed script used rating "4", "5", "3".
-      // FeedbackClient assumes similar. 
-      // Let's display raw score or percentage (Score * 10 if out of 10, or Score * 20 if out of 5).
-      // Assuming 1-5 scale based on seed: (4/5) = 80%.
-      // Actually FeedbackClient used `score/10` in logic: `overallRatingNum / 10`.
-      // If seed was 5, 5/10 is 50%. That's low.
-      // My seed data was 5, 4, 3.
-      // If I want "accurate", I should check if rating is out of 5 or 10.
-      // FeedbackClient: `if (rating >= 8) return "text-green-500";`.
-      // So FeedbackClient expects 1-10.
-      // My seed data gave 3, 4, 5. So it will look like 30%, 40%, 50%.
-      // I should assume the user acts as if my seed data is low, or scaling is different.
-      // I will just show the Average Rating Number directly or percentage based on 10.
-      const avgPercent = (avgScore / 10) * 100; // Assuming 10 scale
+      const ratings = answers.map((a) => Number(a.rating) || 0).filter((r) => r > 0);
+      const avgScore = ratings.length ? ratings.reduce((s, r) => s + r, 0) / ratings.length : 0;
+      const avgPercent = Math.round((avgScore / 10) * 100); // ratings are on a 1-10 scale
+      const bestScore = ratings.length ? Math.max(...ratings) : 0;
 
-      // Streak - Mock logic for now
-      const streak = totalQ > 0 ? Object.keys(answers.reduce((acc, curr) => ({ ...acc, [curr.createdAt]: 1 }), {})).length : 0;
+      // Per-interview average rating (oldest -> newest), for the score trend.
+      const trend = interviews
+        .map((iv) => {
+          const rs = answers
+            .filter((a) => a.mockIdRef === iv.mockId)
+            .map((a) => Number(a.rating) || 0)
+            .filter((r) => r > 0);
+          return rs.length ? +(rs.reduce((s, x) => s + x, 0) / rs.length).toFixed(1) : null;
+        })
+        .filter((v) => v !== null);
+      const recentTrend = trend.slice(-7);
+      const improvement = recentTrend.length >= 2 ? +(recentTrend[recentTrend.length - 1] - recentTrend[0]).toFixed(1) : 0;
+
+      // Active days = unique calendar dates with activity.
+      const streak = totalQ > 0 ? new Set(answers.map((a) => a.createdAt)).size : 0;
+
+      const level = totalQ > 20 ? "Pro" : totalQ > 5 ? "Intermediate" : "Beginner";
 
       setStats({
         totalInterviews: totalInt,
-        averageScore: isNaN(avgPercent) ? 0 : avgPercent.toFixed(0),
+        averageScore: isNaN(avgPercent) ? 0 : avgPercent,
         questionsSolved: totalQ,
-        streak: streak
+        streak,
+        bestScore,
+        level,
+        trend: recentTrend,
+        improvement,
       });
-
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {
@@ -181,27 +185,65 @@ function Dashboard() {
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-xs font-medium mb-2">
-                  <span className="text-gray-500">Resume Strength</span>
-                  <span className="text-primary">{loading ? "..." : (stats.averageScore > 0 ? Number(stats.averageScore) + 5 : 0)}/100</span>
+                  <span className="text-gray-500">Average Score</span>
+                  <span className="text-primary">{loading ? "..." : stats.averageScore}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${loading ? 0 : (stats.averageScore > 0 ? Number(stats.averageScore) + 5 : 0)}%` }}></div>
+                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${loading ? 0 : stats.averageScore}%` }}></div>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-gray-50">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-center p-2 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-400">Rank</p>
-                    <p className="font-bold text-gray-800">{loading ? "..." : (stats.questionsSolved > 10 ? "#" + (100 - stats.questionsSolved) : "Unranked")}</p>
+                    <p className="text-xs text-gray-400">Best Score</p>
+                    <p className="font-bold text-gray-800">{loading ? "..." : (stats.bestScore > 0 ? stats.bestScore + "/10" : "—")}</p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded-lg">
                     <p className="text-xs text-gray-400">Level</p>
-                    <p className="font-bold text-gray-800">{stats.questionsSolved > 20 ? "Pro" : stats.questionsSolved > 5 ? "Intermediate" : "Beginner"}</p>
+                    <p className="font-bold text-gray-800">{loading ? "..." : stats.level}</p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Score Trend */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/60">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" /> Score Trend
+              </h3>
+              {!loading && stats.improvement !== 0 && (
+                <span className={`text-xs font-semibold flex items-center gap-0.5 ${stats.improvement > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stats.improvement > 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                  {Math.abs(stats.improvement)} pts
+                </span>
+              )}
+            </div>
+            {loading ? (
+              <p className="text-xs text-gray-400">Loading…</p>
+            ) : stats.trend.length === 0 ? (
+              <div className="text-center py-6">
+                <Award className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                <p className="text-xs text-gray-400">Complete an interview to see your score trend.</p>
+              </div>
+            ) : (
+              <div className="flex items-end justify-between gap-2 h-28">
+                {stats.trend.map((score, i) => {
+                  const color = score >= 8 ? 'bg-green-500' : score >= 5 ? 'bg-amber-400' : 'bg-red-400';
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+                      <span className="text-[10px] font-semibold text-gray-500">{score}</span>
+                      <div className="w-full bg-gray-100 rounded-md overflow-hidden flex items-end" style={{ height: '100%' }}>
+                        <div className={`w-full rounded-md ${color} transition-all duration-700`} style={{ height: `${(score / 10) * 100}%` }} />
+                      </div>
+                      <span className="text-[9px] text-gray-300">#{i + 1}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
