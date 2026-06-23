@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase/client';
 import {
   Sparkles, BrainCircuit, BarChart3, ShieldCheck, FileCheck2, Mic,
-  ArrowRight, Check, ChevronDown, Star, Zap, Target, Menu, X,
+  ArrowRight, Check, ChevronDown, Zap, Target, Menu, X,
 } from 'lucide-react';
 
 const features = [
@@ -34,6 +34,9 @@ const faqs = [
   { q: 'Is my data private?', a: 'Your interviews and feedback are tied to your account and only visible to you. See our Privacy Policy for details.' },
 ];
 
+const roles = ['Frontend Developer', 'Product Manager', 'Data Analyst', 'Backend Engineer', 'UX Designer', 'DevOps Engineer'];
+const marqueeRoles = ['Software Engineer', 'Product Manager', 'Data Scientist', 'UX Designer', 'Marketing Lead', 'Business Analyst', 'DevOps Engineer', 'QA Engineer', 'Sales Executive', 'HR Manager'];
+
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2">
@@ -42,14 +45,56 @@ function Logo() {
   );
 }
 
+/** Fade-up on scroll into view. */
+function Reveal({ children, delay = 0, className = '' }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Counts up to `to` when scrolled into view. */
+function Counter({ to, suffix = '' }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    let raf, start = null;
+    const dur = 1100;
+    const tick = (t) => {
+      if (start === null) start = t;
+      const p = Math.min((t - start) / dur, 1);
+      setVal(Math.round(p * to));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to]);
+  return <span ref={ref}>{val}{suffix}</span>;
+}
+
 export default function Landing() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [roleIdx, setRoleIdx] = useState(0);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setLoggedIn(!!u));
     return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setRoleIdx((i) => (i + 1) % roles.length), 2400);
+    return () => clearInterval(id);
   }, []);
 
   const primaryCta = loggedIn
@@ -70,9 +115,7 @@ export default function Landing() {
           </div>
           <div className="hidden md:flex items-center gap-3">
             {!loggedIn && (
-              <Link href="/auth/sign-in" className="text-sm font-medium text-gray-700 hover:text-[#4A6CFF] transition-colors">
-                Sign in
-              </Link>
+              <Link href="/auth/sign-in" className="text-sm font-medium text-gray-700 hover:text-[#4A6CFF] transition-colors">Sign in</Link>
             )}
             <Link href={primaryCta.href} className="text-sm font-semibold text-white bg-[#4A6CFF] hover:bg-[#3D5CF0] px-4 py-2 rounded-xl shadow-sm shadow-[#4A6CFF]/30 transition-colors">
               {loggedIn ? 'Dashboard' : 'Get started'}
@@ -96,8 +139,16 @@ export default function Landing() {
       {/* HERO */}
       <section className="relative overflow-hidden pt-32 pb-20 px-5 sm:px-8">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 left-1/4 w-[32rem] h-[32rem] bg-[#4A6CFF]/10 rounded-full blur-3xl" />
-          <div className="absolute top-10 right-0 w-[28rem] h-[28rem] bg-[#8393FF]/10 rounded-full blur-3xl" />
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], x: [0, 30, 0], y: [0, -20, 0] }}
+            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-24 left-1/4 w-[32rem] h-[32rem] bg-[#4A6CFF]/10 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], x: [0, -30, 0], y: [0, 20, 0] }}
+            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-10 right-0 w-[28rem] h-[28rem] bg-[#8393FF]/10 rounded-full blur-3xl"
+          />
         </div>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -125,11 +176,11 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25 }}
               className="mt-8 flex flex-wrap gap-4"
             >
-              <Link href={primaryCta.href} className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#4A6CFF] to-[#8393FF] text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-[#4A6CFF]/25 hover:shadow-[#4A6CFF]/40 transition-all">
+              <Link href={primaryCta.href} className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#4A6CFF] to-[#8393FF] text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-[#4A6CFF]/25 hover:shadow-[#4A6CFF]/40 hover:-translate-y-0.5 transition-all">
                 {primaryCta.label}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <a href="#how" className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 font-semibold px-6 py-3.5 rounded-xl hover:border-gray-300 transition-colors">
+              <a href="#how" className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 font-semibold px-6 py-3.5 rounded-xl hover:border-gray-300 hover:-translate-y-0.5 transition-all">
                 See how it works
               </a>
             </motion.div>
@@ -141,18 +192,33 @@ export default function Landing() {
             </motion.div>
           </div>
 
-          {/* Hero visual — stylised feedback card */}
+          {/* Hero visual — floating report card with rotating role + animated bars */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
             className="relative"
           >
-            <div className="bg-white rounded-3xl shadow-2xl shadow-[#4A6CFF]/10 border border-gray-100 p-6">
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              className="bg-white rounded-3xl shadow-2xl shadow-[#4A6CFF]/10 border border-gray-100 p-6"
+            >
               <div className="flex items-center justify-between mb-6">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Interview report</p>
-                  <p className="font-bold text-gray-800">Frontend Developer</p>
+                  <div className="h-7 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={roleIdx}
+                        initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -18, opacity: 0 }}
+                        transition={{ duration: 0.35 }}
+                        className="font-bold text-gray-800 truncate"
+                      >
+                        {roles[roleIdx]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-50 border-4 border-green-100">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-50 border-4 border-green-100 shrink-0">
                   <span className="text-xl font-extrabold text-green-600">8.4</span>
                 </div>
               </div>
@@ -160,46 +226,66 @@ export default function Landing() {
                 { label: 'Communication', v: 88, c: 'bg-[#4A6CFF]' },
                 { label: 'Technical depth', v: 82, c: 'bg-[#8393FF]' },
                 { label: 'Problem solving', v: 76, c: 'bg-[#A9D7FF]' },
-              ].map((b) => (
+              ].map((b, i) => (
                 <div key={b.label} className="mb-4">
                   <div className="flex justify-between text-xs font-medium text-gray-500 mb-1.5">
                     <span>{b.label}</span><span>{b.v}%</span>
                   </div>
                   <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                    <div className={`h-full rounded-full ${b.c}`} style={{ width: `${b.v}%` }} />
+                    <motion.div
+                      className={`h-full rounded-full ${b.c}`}
+                      initial={{ width: 0 }} animate={{ width: `${b.v}%` }}
+                      transition={{ duration: 1.1, delay: 0.5 + i * 0.15, ease: 'easeOut' }}
+                    />
                   </div>
                 </div>
               ))}
               <div className="mt-5 rounded-xl bg-[#4A6CFF]/5 border border-[#4A6CFF]/10 p-3 flex items-start gap-2">
                 <Sparkles className="w-4 h-4 text-[#4A6CFF] mt-0.5 shrink-0" />
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Strong on fundamentals. Add a concrete metric to your project example to stand out.
-                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">Strong on fundamentals. Add a concrete metric to your project example to stand out.</p>
               </div>
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-2">
+            </motion.div>
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-2"
+            >
               <Zap className="w-5 h-5 text-amber-500" />
               <div>
                 <p className="text-[10px] text-gray-400 font-semibold uppercase">Streak</p>
                 <p className="text-sm font-bold text-gray-800">7 days</p>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
+      {/* ROLES MARQUEE */}
+      <section className="py-6 border-y border-gray-100 bg-white overflow-hidden">
+        <p className="text-center text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Practise for any role</p>
+        <div className="marquee-mask overflow-hidden">
+          <div className="flex w-max animate-marquee gap-3">
+            {[...marqueeRoles, ...marqueeRoles].map((r, i) => (
+              <span key={i} className="shrink-0 rounded-full border border-gray-200 bg-[#F8FAFC] px-5 py-2 text-sm font-medium text-gray-600">
+                {r}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* STATS STRIP */}
-      <section className="border-y border-gray-100 bg-[#F8FAFC]">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <section className="border-b border-gray-100 bg-[#F8FAFC]">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { k: 'AI-scored', v: 'Every answer' },
-            { k: 'Any role', v: 'Tailored Qs' },
-            { k: 'Voice + text', v: 'Realistic' },
-            { k: 'Free', v: 'Early access' },
+            { n: 6, suffix: '', k: 'Question categories' },
+            { n: 10, suffix: '', k: 'Point AI scoring' },
+            { n: 3, suffix: '', k: 'Difficulty levels' },
+            { n: 100, suffix: '%', k: 'Free in early access' },
           ].map((s) => (
             <div key={s.k}>
-              <p className="text-2xl font-extrabold text-gray-900">{s.k}</p>
-              <p className="text-sm text-gray-500">{s.v}</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-[#4A6CFF]"><Counter to={s.n} suffix={s.suffix} /></p>
+              <p className="text-sm text-gray-500 mt-1">{s.k}</p>
             </div>
           ))}
         </div>
@@ -208,19 +294,21 @@ export default function Landing() {
       {/* FEATURES */}
       <section id="features" className="py-24 px-5 sm:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <Reveal className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Everything you need to walk in prepared</h2>
             <p className="mt-4 text-gray-600">From the first practice question to a recruiter-ready resume.</p>
-          </div>
+          </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-gray-100 bg-white p-6 hover:shadow-lg hover:shadow-gray-100 hover:border-[#4A6CFF]/20 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-[#4A6CFF]/10 flex items-center justify-center mb-4">
-                  <f.icon className="w-6 h-6 text-[#4A6CFF]" />
+            {features.map((f, i) => (
+              <Reveal key={f.title} delay={(i % 3) * 0.08}>
+                <div className="h-full rounded-2xl border border-gray-100 bg-white p-6 hover:shadow-xl hover:shadow-gray-100 hover:border-[#4A6CFF]/20 hover:-translate-y-1 transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-[#4A6CFF]/10 flex items-center justify-center mb-4">
+                    <f.icon className="w-6 h-6 text-[#4A6CFF]" />
+                  </div>
+                  <h3 className="font-bold text-lg text-gray-900 mb-2">{f.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
                 </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -229,17 +317,19 @@ export default function Landing() {
       {/* HOW IT WORKS */}
       <section id="how" className="py-24 px-5 sm:px-8 bg-[#F8FAFC] border-y border-gray-100">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <Reveal className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Three steps to your best interview yet</h2>
             <p className="mt-4 text-gray-600">No setup, no fluff. Start practising in under a minute.</p>
-          </div>
+          </Reveal>
           <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((s) => (
-              <div key={s.n} className="relative rounded-2xl bg-white border border-gray-100 p-8">
-                <span className="text-5xl font-extrabold text-[#4A6CFF]/15">{s.n}</span>
-                <h3 className="font-bold text-xl text-gray-900 mt-3 mb-2">{s.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{s.desc}</p>
-              </div>
+            {steps.map((s, i) => (
+              <Reveal key={s.n} delay={i * 0.1}>
+                <div className="relative rounded-2xl bg-white border border-gray-100 p-8 hover:-translate-y-1 hover:shadow-lg transition-all">
+                  <span className="text-5xl font-extrabold text-[#4A6CFF]/15">{s.n}</span>
+                  <h3 className="font-bold text-xl text-gray-900 mt-3 mb-2">{s.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{s.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -247,7 +337,7 @@ export default function Landing() {
 
       {/* PRICING */}
       <section id="pricing" className="py-24 px-5 sm:px-8">
-        <div className="max-w-3xl mx-auto text-center">
+        <Reveal className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Simple pricing</h2>
           <p className="mt-4 text-gray-600">NexPrep is free while in early access. Practise as much as you want.</p>
           <div className="mt-10 rounded-3xl border-2 border-[#4A6CFF]/20 bg-gradient-to-b from-[#4A6CFF]/5 to-white p-10 text-left">
@@ -268,27 +358,33 @@ export default function Landing() {
               ))}
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* FAQ */}
       <section id="faq" className="py-24 px-5 sm:px-8 bg-[#F8FAFC] border-t border-gray-100">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center mb-12">Frequently asked questions</h2>
+          <Reveal><h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center mb-12">Frequently asked questions</h2></Reveal>
           <div className="space-y-3">
             {faqs.map((f, i) => (
-              <div key={i} className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
-                  className="w-full flex items-center justify-between gap-4 p-5 text-left font-semibold text-gray-800"
-                >
-                  {f.q}
-                  <ChevronDown className={`w-5 h-5 text-gray-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
-                </button>
-                {openFaq === i && (
-                  <div className="px-5 pb-5 -mt-1 text-gray-600 leading-relaxed text-sm">{f.a}</div>
-                )}
-              </div>
+              <Reveal key={i} delay={i * 0.05}>
+                <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+                  <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} className="w-full flex items-center justify-between gap-4 p-5 text-left font-semibold text-gray-800">
+                    {f.q}
+                    <ChevronDown className={`w-5 h-5 text-gray-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {openFaq === i && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }} className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 -mt-1 text-gray-600 leading-relaxed text-sm">{f.a}</div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -296,14 +392,19 @@ export default function Landing() {
 
       {/* FINAL CTA */}
       <section className="py-24 px-5 sm:px-8">
-        <div className="max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-[#4A6CFF] to-[#8393FF] text-white p-12 sm:p-16 text-center relative overflow-hidden">
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight relative">Your next interview is closer than you think</h2>
-          <p className="mt-4 text-white/85 max-w-xl mx-auto relative">Join NexPrep and turn interview anxiety into confidence — one practice session at a time.</p>
-          <Link href={primaryCta.href} className="relative mt-8 inline-flex items-center gap-2 bg-white text-[#4A6CFF] font-semibold px-7 py-3.5 rounded-xl hover:bg-gray-50 transition-colors">
-            {primaryCta.label} <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <Reveal className="max-w-5xl mx-auto">
+          <div className="rounded-3xl bg-gradient-to-br from-[#4A6CFF] to-[#8393FF] text-white p-12 sm:p-16 text-center relative overflow-hidden">
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl"
+            />
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight relative">Your next interview is closer than you think</h2>
+            <p className="mt-4 text-white/85 max-w-xl mx-auto relative">Join NexPrep and turn interview anxiety into confidence — one practice session at a time.</p>
+            <Link href={primaryCta.href} className="relative mt-8 inline-flex items-center gap-2 bg-white text-[#4A6CFF] font-semibold px-7 py-3.5 rounded-xl hover:bg-gray-50 hover:-translate-y-0.5 transition-all">
+              {primaryCta.label} <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
       {/* FOOTER */}
