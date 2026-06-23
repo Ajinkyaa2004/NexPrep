@@ -37,6 +37,12 @@ const menuList = [
         icon: ShieldCheck,
         path: "/dashboard/ats-checker",
     },
+    {
+        id: 7,
+        name: "Settings",
+        icon: Settings,
+        path: "/dashboard/settings",
+    },
 ];
 
 export default function Sidebar() {

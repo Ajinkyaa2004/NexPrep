@@ -65,6 +65,22 @@ export async function getFeedbackList(mockIdRef) {
   }
 }
 
+export async function deleteUserData(email) {
+  try {
+    if (!email) return { success: false, error: 'No email provided' };
+    await dbConnect();
+    const interviews = await MockInterview.deleteMany({ createdBy: email });
+    const answers = await UserAnswer.deleteMany({ userEmail: email });
+    return {
+      success: true,
+      deleted: { interviews: interviews.deletedCount, answers: answers.deletedCount },
+    };
+  } catch (error) {
+    console.error('Error deleting user data:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function getDashboardStats(email) {
   try {
     if (!email) return { interviews: [], answers: [] };

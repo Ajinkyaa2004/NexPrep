@@ -7,11 +7,12 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { User, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { Button } from '../../../components/ui/button';
 import { auth } from '../../../firebase/client';
 import AuthShell from '../_components/AuthShell';
 import FloatingInput from '../_components/FloatingInput';
+import GoogleButton from '../_components/GoogleButton';
 
 export default function SignUp() {
   const router = useRouter();
@@ -39,6 +40,8 @@ export default function SignUp() {
       if (fullName.trim()) {
         await updateProfile(user, { displayName: fullName.trim() });
       }
+      // Fire-and-forget verification email (don't block the redirect on it).
+      sendEmailVerification(user).catch((err) => console.warn('Verification email failed:', err?.code));
       toast.success('Account created! Welcome to NexPrep 🎉');
       setTimeout(() => router.push('/dashboard'), 900);
     } catch (error) {
@@ -126,11 +129,25 @@ export default function SignUp() {
           </Button>
         </form>
 
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400 font-medium">OR</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <GoogleButton label="Sign up with Google" />
+
         <p className="text-sm text-center text-gray-500 mt-8">
           Already have an account?{' '}
           <Link href="/auth/sign-in" className="text-[#4A6CFF] font-semibold hover:underline">
             Sign in here
           </Link>
+        </p>
+
+        <p className="text-xs text-center text-gray-400 mt-4">
+          By signing up you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-gray-600">Terms</Link> and{' '}
+          <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
         </p>
       </motion.div>
     </AuthShell>

@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, Settings } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { toast } from 'sonner';
 import { auth } from '../../../firebase/client';
@@ -75,13 +75,22 @@ export default function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {user ? (
-              <DropdownMenuItem
-                onClick={handleSignOut}
-                className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem
+                  onClick={() => router.push('/dashboard/settings')}
+                  className="cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </>
             ) : (
               <DropdownMenuItem
                 onClick={() => router.push('/auth/sign-in')}

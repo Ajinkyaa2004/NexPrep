@@ -12,6 +12,7 @@ import { Button } from '../../../components/ui/button';
 import { auth } from '../../../firebase/client';
 import AuthShell from '../_components/AuthShell';
 import FloatingInput from '../_components/FloatingInput';
+import GoogleButton from '../_components/GoogleButton';
 
 export default function SignIn() {
   const router = useRouter();
@@ -78,7 +79,9 @@ export default function SignIn() {
           />
 
           <div className="flex justify-end">
-            <span className="text-sm text-gray-400 cursor-default select-none">Forgot password?</span>
+            <Link href="/auth/forgot" className="text-sm text-[#4A6CFF] font-medium hover:underline">
+              Forgot password?
+            </Link>
           </div>
 
           <Button
@@ -98,6 +101,14 @@ export default function SignIn() {
             )}
           </Button>
         </form>
+
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400 font-medium">OR</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <GoogleButton label="Sign in with Google" />
 
         <p className="text-sm text-center text-gray-500 mt-8">
           Don&apos;t have an account?{' '}
