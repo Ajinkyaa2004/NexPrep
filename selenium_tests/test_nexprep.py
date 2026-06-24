@@ -403,20 +403,18 @@ def test_interview_detail(d):
     g = "InterviewDetail"
     try:
         d.get(BASE + f"/dashboard/interview/{TEST_MOCK_ID}")
-        wait(d, By.XPATH, "//*[contains(text(),\"Let's Get Started\")]", 15)
-        record(g, "page loads", "let's get started" in body_text(d).lower())
         # Job role + Start button only render after the async getInterviewById resolves.
         try:
             WebDriverWait(d, 15).until(lambda x: "selenium test role" in body_text(x).lower())
         except TimeoutException:
             pass
         txt = body_text(d)
+        record(g, "page loads", "get started" in txt.lower())
         record(g, "shows job role", "selenium test role" in txt.lower())
-        record(g, "Enable Web Cam button present", find_btn_by_text(d, "Enable Web Cam") is not None)
+        record(g, "Enable camera button present", find_btn_by_text(d, "Enable camera") is not None)
         record(g, "Start Interview button present", find_btn_by_text(d, "Start Interview") is not None)
-
-        # Info card should not overlap (both Enable button and info text visible)
-        record(g, "Information card present", "information" in txt.lower())
+        # Redesigned layout: details panel + "Before you begin" tips
+        record(g, "details + tips present", "interview details" in txt.lower() and "before you begin" in txt.lower())
     except Exception as e:
         record(g, "interview detail", False, str(e)[:100])
 

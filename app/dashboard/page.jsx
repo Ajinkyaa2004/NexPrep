@@ -175,7 +175,6 @@ function Dashboard() {
           <section>
             <div className="flex items-center justify-between mb-4 px-1">
               <h3 className="font-bold text-lg text-gray-800">Recent Activity</h3>
-              <span className="text-xs text-primary cursor-pointer hover:underline">View All</span>
             </div>
             <InterviewList />
           </section>
