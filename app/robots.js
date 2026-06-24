@@ -1,4 +1,4 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nexprep.ai";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nexprepai.vercel.app";
 
 export default function robots() {
   return {
