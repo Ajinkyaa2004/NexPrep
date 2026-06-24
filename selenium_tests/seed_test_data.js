@@ -3,6 +3,7 @@
 import mongoose from 'mongoose';
 import dbConnect from '../utils/mongodb.js';
 import { MockInterview, UserAnswer } from '../utils/models.js';
+import { UserProfile } from '../utils/profileModels.js';
 
 const MOCK_ID = 'selenium-test-interview';
 // Must match the account the Selenium suite signs in as, so ownership checks pass.
@@ -13,6 +14,13 @@ async function run() {
 
   await MockInterview.deleteMany({ mockId: MOCK_ID });
   await UserAnswer.deleteMany({ mockIdRef: MOCK_ID });
+
+  // Ensure the test account has a profile so the onboarding redirect doesn't fire.
+  await UserProfile.findOneAndUpdate(
+    { email: OWNER },
+    { $set: { email: OWNER, name: 'Selenium Tester', targetRole: 'Frontend Developer', experienceLevel: '1–3 years', onboardedAt: '22-06-2026' } },
+    { upsert: true }
+  );
 
   await MockInterview.create({
     mockId: MOCK_ID,

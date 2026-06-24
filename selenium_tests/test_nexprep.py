@@ -251,9 +251,11 @@ def test_dashboard(d):
     g = "Dashboard"
     try:
         d.get(BASE + "/dashboard")
-        wait(d, By.XPATH, "//*[contains(text(),'Dashboard Overview')]", 15)
+        # Header is personalized ("Welcome back, X") when a profile exists,
+        # else "Dashboard Overview" — wait for a stable stat card instead.
+        wait(d, By.XPATH, "//*[contains(text(),'Total Interviews')]", 15)
         txt = body_text(d)
-        record(g, "page loads (Dashboard Overview)", "dashboard overview" in txt.lower())
+        record(g, "page loads", "welcome back" in txt.lower() or "dashboard overview" in txt.lower())
         for stat in ["Total Interviews", "Average Score", "Questions Solved", "Active Days"]:
             record(g, f"stat card '{stat}'", stat.lower() in txt.lower())
 

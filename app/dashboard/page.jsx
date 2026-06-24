@@ -7,6 +7,7 @@ import { UserCheck, Zap, TrendingUp, Clock, Activity, Award, ArrowUpRight, Arrow
 
 import { auth } from '../../firebase/client';
 import { getDashboardStats } from '../actions/interview';
+import { getProfile } from '../actions/profile';
 import { getIdToken } from '../../lib/clientAuth';
 
 function Dashboard() {
@@ -22,6 +23,7 @@ function Dashboard() {
     improvement: 0,    // last vs first interview average (0-10)
   });
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => {
@@ -33,6 +35,10 @@ function Dashboard() {
   useEffect(() => {
     if (user?.email) {
       GetDashboardStats();
+      (async () => {
+        const token = await getIdToken();
+        setProfile(await getProfile(token));
+      })();
     }
   }, [user]);
 
@@ -100,10 +106,18 @@ function Dashboard() {
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary tracking-wider uppercase border border-primary/20">Beta v2.0</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h2>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            {(() => {
+              const first = (profile?.name || user?.displayName || user?.email?.split('@')[0] || '').split(' ')[0];
+              return first ? `Welcome back, ${first} 👋` : 'Dashboard Overview';
+            })()}
+          </h2>
           <p className="text-gray-500 mt-1 flex items-center gap-2 text-sm">
-            <Activity className="w-4 h-4 text-secondary" />
-            System Status: <span className="text-green-500 font-medium">Optimal</span>
+            {profile?.targetRole ? (
+              <><Activity className="w-4 h-4 text-secondary" /> Targeting <span className="text-primary font-medium">{profile.targetRole}</span>{profile.experienceLevel ? ` · ${profile.experienceLevel}` : ''}</>
+            ) : (
+              <><Activity className="w-4 h-4 text-secondary" /> Ready to ace your next interview?</>
+            )}
           </p>
         </div>
       </div>

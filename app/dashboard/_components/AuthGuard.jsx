@@ -1,31 +1,53 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 import { auth } from '../../../firebase/client';
+import { getIdToken } from '../../../lib/clientAuth';
+import { getProfile } from '../../actions/profile';
 
 /**
  * Client-side route guard for the whole /dashboard segment.
- * Until Firebase resolves the auth state we render a loader (so protected
- * content never flashes); if there's no signed-in user we redirect to sign-in.
+ * - Redirects unauthenticated users to sign-in.
+ * - On first login (no profile yet) sends the user to onboarding, unless they
+ *   already skipped it this session or are already on the onboarding route.
  */
 export default function AuthGuard({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [status, setStatus] = useState('checking'); // checking | authed | unauthed
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setStatus('authed');
-      } else {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
         setStatus('unauthed');
         router.replace('/auth/sign-in');
+        return;
       }
+
+      const onOnboarding = pathname === '/dashboard/onboarding';
+      const skipped = typeof window !== 'undefined' && sessionStorage.getItem('nexprep_onboarded') === '1';
+
+      if (!onOnboarding && !skipped) {
+        try {
+          const token = await getIdToken();
+          const profile = await getProfile(token);
+          if (profile) {
+            sessionStorage.setItem('nexprep_onboarded', '1');
+          } else {
+            router.replace('/dashboard/onboarding');
+            return;
+          }
+        } catch (_) {
+          // If the check fails, don't block the user.
+        }
+      }
+      setStatus('authed');
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, pathname]);
 
   if (status !== 'authed') {
     return (
