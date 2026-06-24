@@ -1,10 +1,12 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Search, User, LogOut, Settings } from 'lucide-react';
+import { Bell, Search, User, LogOut, Settings, Rocket, Flame, CheckCircle2, Trophy, Users, Inbox } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { toast } from 'sonner';
 import { auth } from '../../../firebase/client';
+import { getIdToken } from '../../../lib/clientAuth';
+import { getNotifications } from '../../actions/notifications';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +16,41 @@ import {
   DropdownMenuTrigger,
 } from '../../../components/ui/dropdown-menu';
 
+const ICONS = { rocket: Rocket, flame: Flame, check: CheckCircle2, trophy: Trophy, users: Users };
+const SEEN_KEY = 'nexprep_seen_notifs';
+
 export default function Header() {
   const router = useRouter();
   const [user, setUser] = React.useState(null);
+  const [notifs, setNotifs] = React.useState([]);
+  const [hasUnseen, setHasUnseen] = React.useState(false);
 
   React.useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setUser(u);
+      if (u) loadNotifs();
+    });
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadNotifs = async () => {
+    try {
+      const token = await getIdToken();
+      const list = await getNotifications(token);
+      setNotifs(list || []);
+      let seen = [];
+      try { seen = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch {}
+      setHasUnseen((list || []).some((n) => !seen.includes(n.id)));
+    } catch (e) {
+      // non-fatal
+    }
+  };
+
+  const markSeen = () => {
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify(notifs.map((n) => n.id))); } catch {}
+    setHasUnseen(false);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -49,12 +78,50 @@ export default function Header() {
       </div>
 
       {/* Right Side Actions */}
-      <div className="flex items-center gap-6 ml-auto">
-        <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" aria-label="Notifications">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
+      <div className="flex items-center gap-4 ml-auto">
+        {/* Notifications */}
+        <DropdownMenu onOpenChange={(open) => { if (open) markSeen(); }}>
+          <DropdownMenuTrigger asChild>
+            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" aria-label="Notifications">
+              <Bell className="w-5 h-5" />
+              {hasUnseen && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span className="font-semibold text-gray-800">Notifications</span>
+              {notifs.length > 0 && <span className="text-xs text-gray-400">{notifs.length}</span>}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {notifs.length === 0 ? (
+              <div className="px-3 py-8 text-center text-gray-400">
+                <Inbox className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">You're all caught up</p>
+              </div>
+            ) : (
+              notifs.map((n) => {
+                const Icon = ICONS[n.icon] || Bell;
+                return (
+                  <DropdownMenuItem
+                    key={n.id}
+                    onClick={() => n.href && router.push(n.href)}
+                    className="cursor-pointer items-start gap-3 py-2.5"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 leading-snug">{n.title}</p>
+                      <p className="text-xs text-gray-500 leading-snug mt-0.5">{n.body}</p>
+                    </div>
+                  </DropdownMenuItem>
+                );
+              })
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
+        {/* Account */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -76,28 +143,16 @@ export default function Header() {
             <DropdownMenuSeparator />
             {user ? (
               <>
-                <DropdownMenuItem
-                  onClick={() => router.push('/dashboard/settings')}
-                  className="cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
+                <DropdownMenuItem onClick={() => router.push('/dashboard/settings')} className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" /> Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer">
+                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem
-                onClick={() => router.push('/auth/sign-in')}
-                className="cursor-pointer"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Sign In
+              <DropdownMenuItem onClick={() => router.push('/auth/sign-in')} className="cursor-pointer">
+                <User className="w-4 h-4 mr-2" /> Sign In
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
