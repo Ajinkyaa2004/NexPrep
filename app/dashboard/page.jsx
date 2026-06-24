@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import AddNewInterview from './_components/AddNewInterview';
 import InterviewList from './_components/InterviewList';
+import Achievements from './_components/Achievements';
 import { UserCheck, Zap, TrendingUp, Clock, Activity, Award, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 import { auth } from '../../firebase/client';
@@ -154,6 +155,8 @@ function Dashboard() {
               <AddNewInterview />
             </div>
           </section>
+
+          <Achievements stats={stats} loading={loading} />
 
           <section>
             <div className="flex items-center justify-between mb-4 px-1">
