@@ -6,123 +6,84 @@ import { Mic, Square, Keyboard, Save, Loader2, CheckCircle2, VideoOff } from 'lu
 import { toast } from 'sonner';
 import { chatSession } from '../../../../../../utils/GeminiAIModal';
 import { createUserAnswer } from '../../../../../actions/interview';
-import { auth } from '../../../../../../firebase/client';
+import { transcribeAndEvaluate } from '../../../../../actions/ai';
 import { getIdToken } from '../../../../../../lib/clientAuth';
 import moment from 'moment';
 
-/**
- * Custom speech-to-text hook built directly on the Web Speech API.
- * Fully controls the SpeechRecognition instance so it never throws the
- * "recognition has already started" InvalidStateError, and keeps React state
- * in sync via the recognition lifecycle events.
- */
-function useSpeechRecognition() {
+/* ---------- live transcript preview (Web Speech API) ---------- */
+function useSpeechPreview() {
   const recognitionRef = useRef(null);
-  const wantOnRef = useRef(false); // user intends to keep recording
-  const activeRef = useRef(false); // recognition is currently running
+  const wantOnRef = useRef(false);
+  const activeRef = useRef(false);
   const finalRef = useRef('');
-
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const [interim, setInterim] = useState('');
-  const [supported, setSupported] = useState(true);
+  const [preview, setPreview] = useState('');
 
   useEffect(() => {
-    const SR =
-      typeof window !== 'undefined' &&
-      (window.SpeechRecognition || window.webkitSpeechRecognition);
-
-    if (!SR) {
-      setSupported(false);
-      return;
-    }
-
+    const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!SR) return;
     const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-US';
-
-    rec.onstart = () => {
-      activeRef.current = true;
-      setIsRecording(true);
-    };
-
-    rec.onend = () => {
-      activeRef.current = false;
-      // Chrome auto-stops after silence in continuous mode — restart if the
-      // user hasn't explicitly stopped.
-      if (wantOnRef.current) {
-        try {
-          rec.start();
-        } catch (_) {
-          /* will retry on next end */
-        }
-      } else {
-        setIsRecording(false);
-      }
-    };
-
-    rec.onerror = (e) => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        wantOnRef.current = false;
-        setIsRecording(false);
-        toast.error('Microphone access is blocked. Allow it in your browser, or use "Type".');
-      }
-      // 'no-speech' / 'aborted' / 'network' are non-fatal in continuous mode.
-    };
-
+    rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
+    rec.onstart = () => { activeRef.current = true; };
+    rec.onend = () => { activeRef.current = false; if (wantOnRef.current) { try { rec.start(); } catch (_) {} } };
+    rec.onerror = () => {};
     rec.onresult = (event) => {
-      let interimText = '';
+      let it = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const res = event.results[i];
-        if (res.isFinal) finalRef.current += res[0].transcript + ' ';
-        else interimText += res[0].transcript;
+        const r = event.results[i];
+        if (r.isFinal) finalRef.current += r[0].transcript + ' ';
+        else it += r[0].transcript;
       }
-      setInterim(interimText);
-      setTranscript((finalRef.current + interimText).trim());
+      setInterim(it);
+      setPreview((finalRef.current + it).trim());
     };
-
     recognitionRef.current = rec;
-
-    return () => {
-      wantOnRef.current = false;
-      try { rec.abort(); } catch (_) {}
-      recognitionRef.current = null;
-    };
+    return () => { wantOnRef.current = false; try { rec.abort(); } catch (_) {} };
   }, []);
 
-  const start = () => {
-    const rec = recognitionRef.current;
-    if (!rec) return;
-    finalRef.current = '';
-    setTranscript('');
-    setInterim('');
-    wantOnRef.current = true;
-    if (!activeRef.current) {
-      try {
-        rec.start();
-      } catch (_) {
-        // Already started — state will sync via onstart. Safe to ignore.
-      }
-    }
+  return {
+    start() { finalRef.current = ''; setPreview(''); setInterim(''); wantOnRef.current = true; if (!activeRef.current) { try { recognitionRef.current?.start(); } catch (_) {} } },
+    stop() { wantOnRef.current = false; try { recognitionRef.current?.stop(); } catch (_) {} },
+    reset() { finalRef.current = ''; setPreview(''); setInterim(''); },
+    interim, preview,
   };
+}
 
-  const stop = () => {
-    wantOnRef.current = false;
-    const rec = recognitionRef.current;
-    if (rec) {
-      try { rec.stop(); } catch (_) {}
-    }
-    setIsRecording(false);
-  };
-
-  const reset = () => {
-    finalRef.current = '';
-    setTranscript('');
-    setInterim('');
-  };
-
-  return { isRecording, transcript, interim, supported, start, stop, reset };
+/* ---------- WAV audio recorder (Web Audio API) ---------- */
+function downsample(buffer, inRate, outRate) {
+  if (outRate >= inRate) return buffer;
+  const ratio = inRate / outRate;
+  const newLen = Math.round(buffer.length / ratio);
+  const result = new Float32Array(newLen);
+  let o = 0, i = 0;
+  while (o < newLen) {
+    const next = Math.round((o + 1) * ratio);
+    let sum = 0, cnt = 0;
+    for (let j = i; j < next && j < buffer.length; j++) { sum += buffer[j]; cnt++; }
+    result[o++] = sum / (cnt || 1);
+    i = next;
+  }
+  return result;
+}
+function encodeWAV(samples, rate) {
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buf);
+  const w = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); view.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVE');
+  w(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+  w(36, 'data'); view.setUint32(40, samples.length * 2, true);
+  let off = 44;
+  for (let i = 0; i < samples.length; i++) { const s = Math.max(-1, Math.min(1, samples[i])); view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true); off += 2; }
+  return new Blob([view], { type: 'audio/wav' });
+}
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onloadend = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
 }
 
 function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, interviewData }) {
@@ -131,102 +92,133 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
   const [typeMode, setTypeMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [camError, setCamError] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasAudio, setHasAudio] = useState(false);
 
-  const { isRecording, transcript, interim, supported, start, stop, reset } = useSpeechRecognition();
+  const speech = useSpeechPreview();
 
-  // Mirror the speech transcript into the answer (unless the user is typing).
-  useEffect(() => {
-    if (!typeMode && transcript) {
-      setUserAnswer(transcript);
-      setSaved(false);
-    }
-  }, [transcript, typeMode]);
+  // Web Audio recorder refs
+  const ctxRef = useRef(null), procRef = useRef(null), srcRef = useRef(null), streamRef = useRef(null);
+  const chunksRef = useRef([]); const inRateRef = useRef(48000); const audioBlobRef = useRef(null);
 
-  // Reset everything when moving to a new question.
-  useEffect(() => {
-    stop();
-    reset();
-    setUserAnswer('');
-    setSaved(false);
-    setTypeMode(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeQuestionIndex]);
-
-  const toggleRecording = () => {
-    if (isRecording) {
-      stop();
-    } else {
-      setUserAnswer('');
-      setSaved(false);
-      start();
+  const startAudio = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC(); ctxRef.current = ctx; inRateRef.current = ctx.sampleRate;
+      const src = ctx.createMediaStreamSource(stream); srcRef.current = src;
+      const proc = ctx.createScriptProcessor(4096, 1, 1); procRef.current = proc;
+      chunksRef.current = [];
+      proc.onaudioprocess = (e) => { chunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+      src.connect(proc); proc.connect(ctx.destination);
+      return true;
+    } catch (e) {
+      console.error('audio capture failed:', e);
+      return false;
     }
   };
 
+  const stopAudio = () => {
+    try { procRef.current && (procRef.current.onaudioprocess = null, procRef.current.disconnect()); } catch (_) {}
+    try { srcRef.current && srcRef.current.disconnect(); } catch (_) {}
+    try { streamRef.current && streamRef.current.getTracks().forEach((t) => t.stop()); } catch (_) {}
+    const chunks = chunksRef.current; chunksRef.current = [];
+    try { ctxRef.current && ctxRef.current.close(); } catch (_) {}
+    if (!chunks.length) { audioBlobRef.current = null; return; }
+    let len = 0; for (const c of chunks) len += c.length;
+    const data = new Float32Array(len); let off = 0;
+    for (const c of chunks) { data.set(c, off); off += c.length; }
+    const down = downsample(data, inRateRef.current, 16000);
+    audioBlobRef.current = encodeWAV(down, 16000);
+    setHasAudio(true);
+  };
+
+  // Reset on question change
+  useEffect(() => {
+    if (isRecording) { speech.stop(); stopAudio(); }
+    audioBlobRef.current = null;
+    setIsRecording(false); setHasAudio(false); setUserAnswer(''); setSaved(false); setTypeMode(false);
+    speech.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeQuestionIndex]);
+
+  // Mirror live speech preview into the answer box (voice mode only)
+  useEffect(() => {
+    if (!typeMode && speech.preview) { setUserAnswer(speech.preview); setSaved(false); }
+  }, [speech.preview, typeMode]);
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      speech.stop(); stopAudio(); setIsRecording(false);
+      return;
+    }
+    setUserAnswer(''); setSaved(false); audioBlobRef.current = null; setHasAudio(false);
+    const ok = await startAudio();
+    if (!ok) { toast.error('Microphone unavailable. Please type your answer instead.'); setTypeMode(true); return; }
+    speech.start();
+    setIsRecording(true);
+  };
+
   const enableTyping = () => {
-    if (isRecording) stop();
+    if (isRecording) { speech.stop(); stopAudio(); setIsRecording(false); }
+    audioBlobRef.current = null; setHasAudio(false);
     setTypeMode((t) => !t);
   };
 
   const saveAnswer = async () => {
-    const answer = userAnswer.trim();
-    if (answer.length < 2) {
-      toast.error('Please record or type an answer first.');
-      return;
-    }
-    if (!interviewData?.mockId) {
-      toast.error('Interview ID is missing. Please refresh the page.');
-      return;
-    }
-    if (isRecording) stop();
-
-    setLoading(true);
+    if (isRecording) { speech.stop(); stopAudio(); setIsRecording(false); }
+    if (!interviewData?.mockId) { toast.error('Interview ID is missing. Please refresh.'); return; }
     const currentQuestion = mockInterviewQuestion[activeQuestionIndex];
-    const feedbackPrompt =
-      'You are a strict but fair technical interview evaluator. ' +
-      "Evaluate the candidate's answer by comparing it against the question and the expected (model) answer.\n\n" +
-      'Question: ' + (currentQuestion?.question || '') + '\n' +
-      'Expected/Model Answer: ' + (currentQuestion?.answer || 'N/A') + '\n' +
-      "Candidate's Answer: " + answer + '\n\n' +
-      'Scoring rules (be accurate, do not inflate): ' +
-      'rate 1-3 if the answer is empty, off-topic, or largely incorrect; ' +
-      '4-6 if partially correct but missing key concepts; ' +
-      '7-8 if mostly correct and relevant; ' +
-      '9-10 only if accurate, complete, and well-articulated. ' +
-      'Base the rating ONLY on what the candidate actually said versus the expected answer.\n\n' +
-      'Return JSON with exactly these fields: ' +
-      "1. 'rating' (integer 1-10). " +
-      "2. 'strength' (one specific thing the candidate did well; if nothing, say so honestly). " +
-      "3. 'feedback' (a detailed report string using **bold** for headers, including: " +
-      '**Overall Impression**, **Correctness vs Expected Answer**, **Missing Key Concepts**, and ' +
-      '**Final Recommendation** (Strong / Moderate / Needs Improvement)). ' +
-      'OUTPUT RAW JSON ONLY.';
-
+    setLoading(true);
     try {
-      const result = await chatSession.sendMessage(feedbackPrompt, { temperature: 0.3 });
-      const textResponse = result.response.text();
-      const cleanResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('No JSON found in AI response');
-      const JsonFeedbackResp = JSON.parse(jsonMatch[0]);
-
       const token = await getIdToken();
+      let answerText = '';
+      let rating = '0', strength = 'N/A', feedback = 'No feedback generated';
+
+      // Allow the audio blob a tick to finalize after stop.
+      await new Promise((r) => setTimeout(r, 150));
+
+      if (!typeMode && audioBlobRef.current) {
+        // Accurate path: Gemini transcribes the real audio AND evaluates it.
+        const base64 = await blobToBase64(audioBlobRef.current);
+        const res = await transcribeAndEvaluate(
+          { audioBase64: base64, mimeType: 'audio/wav', question: currentQuestion?.question, modelAnswer: currentQuestion?.answer },
+          token
+        );
+        if (!res.success) { toast.error(res.error || 'Could not evaluate your answer.'); setLoading(false); return; }
+        answerText = (res.transcript || '').trim() || speech.preview.trim();
+        if (answerText.length < 2) { toast.error('We couldn’t hear an answer — please try again or type it.'); setLoading(false); return; }
+        rating = String(res.rating ?? '0'); strength = res.strength || 'N/A'; feedback = res.feedback || feedback;
+      } else {
+        // Typed path: evaluate the text.
+        const answer = userAnswer.trim();
+        if (answer.length < 2) { toast.error('Please record or type an answer first.'); setLoading(false); return; }
+        const prompt =
+          'You are a strict but fair technical interview evaluator. Compare the answer to the expected answer.\n' +
+          'Question: ' + (currentQuestion?.question || '') + '\nExpected/Model Answer: ' + (currentQuestion?.answer || 'N/A') +
+          "\nCandidate's Answer: " + answer + '\n' +
+          'Scoring: 1-3 empty/off-topic/incorrect; 4-6 partial; 7-8 mostly correct; 9-10 accurate+complete. Base ONLY on what they said.\n' +
+          "Return JSON { 'rating': int 1-10, 'strength': string, 'feedback': string with **bold** headers (**Overall Impression**, **Correctness vs Expected Answer**, **Missing Key Concepts**, **Final Recommendation**) }. RAW JSON ONLY.";
+        const result = await chatSession.sendMessage(prompt, { temperature: 0.3 });
+        const clean = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        const match = clean.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(match ? match[0] : clean);
+        answerText = answer; rating = String(parsed.rating ?? '0'); strength = parsed.strength || 'N/A'; feedback = parsed.feedback || feedback;
+      }
+
+      setUserAnswer(answerText);
       const saveResult = await createUserAnswer({
         mockIdRef: interviewData.mockId,
         question: currentQuestion?.question,
         correctAns: currentQuestion?.answer,
-        userAns: answer,
-        feedback: JsonFeedbackResp?.feedback || 'No feedback generated',
-        strength: JsonFeedbackResp?.strength || 'N/A',
-        rating: String(JsonFeedbackResp?.rating ?? '0'),
+        userAns: answerText,
+        feedback, strength, rating,
         createdAt: moment().format('DD-MM-yyyy'),
       }, token);
 
-      if (saveResult.success) {
-        setSaved(true);
-        toast.success(`Answer saved & evaluated ✓ (Score: ${JsonFeedbackResp?.rating ?? '?'}/10)`);
-      } else {
-        toast.error('Could not save your answer. ' + (saveResult.error || ''));
-      }
+      if (saveResult.success) { setSaved(true); toast.success(`Answer saved & evaluated ✓ (Score: ${rating}/10)`); }
+      else { toast.error('Could not save your answer. ' + (saveResult.error || '')); }
     } catch (e) {
       console.error('Evaluation error:', e);
       toast.error('Could not evaluate the answer. Please try again.');
@@ -235,7 +227,7 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
     }
   };
 
-  const micDisabled = loading || typeMode || !supported;
+  const canSave = !loading && (typeMode ? userAnswer.trim().length > 1 : (hasAudio || isRecording || userAnswer.trim().length > 1));
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-3">
@@ -247,23 +239,16 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
             <p className="text-sm">Camera unavailable — you can still answer.</p>
           </div>
         ) : (
-          <Webcam
-            mirrored
-            audio={false}
-            onUserMediaError={() => setCamError(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          <Webcam mirrored audio={false} onUserMediaError={() => setCamError(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
-
         {isRecording && (
           <div className="absolute top-3 left-3 z-10 bg-black/50 text-white px-3 py-1 rounded-full text-xs flex items-center gap-2 backdrop-blur-sm border border-white/10">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            Recording
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> Recording
           </div>
         )}
         {loading && (
           <div className="absolute top-3 right-3 z-10 bg-black/50 text-white px-3 py-1 rounded-full text-xs flex items-center gap-2 backdrop-blur-sm border border-white/10">
-            <Loader2 className="w-3 h-3 animate-spin" /> Evaluating…
+            <Loader2 className="w-3 h-3 animate-spin" /> Transcribing & evaluating…
           </div>
         )}
       </div>
@@ -279,44 +264,32 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
           />
         ) : (
           <div className="min-h-[3rem] max-h-24 overflow-y-auto text-sm text-gray-700 bg-gray-50 rounded-lg p-2.5 leading-relaxed">
-            {userAnswer} <span className="text-gray-400">{isRecording && interim}</span>
-            {!userAnswer && !interim && (
+            {userAnswer} <span className="text-gray-400">{isRecording && speech.interim}</span>
+            {!userAnswer && !speech.interim && (
               <span className="text-gray-400 italic">
-                {isRecording ? 'Listening… speak your answer now.' : 'Click "Record" and answer aloud, or switch to typing.'}
+                {isRecording ? 'Listening… speak your answer now.' : (hasAudio ? 'Answer recorded — click "Save Answer" to get your score.' : 'Click "Record" and answer aloud, or switch to typing.')}
               </span>
             )}
           </div>
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            onClick={toggleRecording}
-            disabled={micDisabled}
-            title={!supported ? 'Speech recognition not supported in this browser — use Type' : ''}
-            className={`gap-2 h-10 ${isRecording ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' : 'bg-primary hover:bg-primary/90 text-white'}`}
-          >
+          <Button onClick={toggleRecording} disabled={loading || typeMode}
+            className={`gap-2 h-10 ${isRecording ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' : 'bg-primary hover:bg-primary/90 text-white'}`}>
             {isRecording ? <><Square className="w-4 h-4" /> Stop</> : <><Mic className="w-4 h-4" /> Record</>}
           </Button>
-
           <Button variant="outline" onClick={enableTyping} disabled={loading} className="gap-2 h-10">
             <Keyboard className="w-4 h-4" /> {typeMode ? 'Use Mic' : 'Type'}
           </Button>
-
-          <Button
-            onClick={saveAnswer}
-            disabled={loading || !userAnswer.trim()}
-            className={`gap-2 h-10 ml-auto ${saved ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
-          >
+          <Button onClick={saveAnswer} disabled={!canSave}
+            className={`gap-2 h-10 ml-auto ${saved ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-900 hover:bg-gray-800'} text-white`}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {loading ? 'Evaluating…' : saved ? 'Saved' : 'Save Answer'}
           </Button>
         </div>
-
-        {!supported && (
-          <p className="text-[11px] text-amber-600">
-            Speech recognition isn&apos;t supported in this browser. Click &quot;Type&quot; to enter your answer.
-          </p>
-        )}
+        <p className="text-[11px] text-gray-400">
+          Speak naturally — your audio is transcribed by AI for an accurate score. Prefer typing? Use the “Type” option.
+        </p>
       </div>
     </div>
   );
