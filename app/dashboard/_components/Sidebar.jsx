@@ -3,7 +3,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Video, FileText, BarChart2, ShieldCheck, Settings, LogOut, PlusCircle, PenBox } from "lucide-react";
+import { LayoutDashboard, Video, FileText, BarChart2, ShieldCheck, Settings, LogOut, PlusCircle, PenBox, UsersRound } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
@@ -36,6 +36,12 @@ const menuList = [
         name: "ATS Checker",
         icon: ShieldCheck,
         path: "/dashboard/ats-checker",
+    },
+    {
+        id: 8,
+        name: "Cohorts",
+        icon: UsersRound,
+        path: "/dashboard/cohorts",
     },
     {
         id: 7,

@@ -86,6 +86,11 @@ const UserAnswerSchema = new mongoose.Schema({
   timestamps: false,
 });
 
+// Indexes for the query patterns used by the app (scale-friendly lookups).
+MockInterviewSchema.index({ createdBy: 1, _id: -1 }); // list/dashboard by owner, newest first
+UserAnswerSchema.index({ mockIdRef: 1, _id: 1 });      // feedback list by interview
+UserAnswerSchema.index({ userEmail: 1 });              // dashboard stats by owner
+
 // Export models (use existing model if already compiled)
 export const MockInterview = mongoose.models.MockInterview || mongoose.model('MockInterview', MockInterviewSchema);
 export const UserAnswer = mongoose.models.UserAnswer || mongoose.model('UserAnswer', UserAnswerSchema);

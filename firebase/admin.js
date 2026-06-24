@@ -42,7 +42,12 @@ export async function verifyAuthToken(idToken) {
   if (!adminAuth) return null;
   try {
     const decoded = await adminAuth.verifyIdToken(idToken);
-    return { uid: decoded.uid, email: decoded.email || null, emailVerified: decoded.email_verified };
+    return {
+      uid: decoded.uid,
+      email: decoded.email || null,
+      name: decoded.name || null,
+      emailVerified: decoded.email_verified,
+    };
   } catch (e) {
     console.error("Token verification failed:", e.code || e.message);
     return null;
