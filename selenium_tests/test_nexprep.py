@@ -308,8 +308,8 @@ def test_create_interview_dialog(d):
         else:
             record(g, "difficulty dropdown selects", False, "trigger not found")
 
-        # Work mode + duration dropdowns present
-        record(g, "work mode dropdown present", find_btn_by_text(d, "Select Mode") is not None)
+        # Interview type + duration dropdowns present
+        record(g, "interview type dropdown present", find_btn_by_text(d, "Mixed") is not None)
         record(g, "duration dropdown present", find_btn_by_text(d, "Select Duration") is not None)
 
         # Cancel closes the dialog

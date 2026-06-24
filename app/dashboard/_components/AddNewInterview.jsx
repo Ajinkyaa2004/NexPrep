@@ -1,7 +1,7 @@
 'use client';
 import { auth } from '../../../firebase/client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import {
   Dialog,
@@ -23,6 +23,7 @@ import { chatSession } from '../../../utils/GeminiAIModal';
 import { LoaderCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { createInterview } from '../../actions/interview';
+import { getProfile } from '../../actions/profile';
 import { getIdToken } from '../../../lib/clientAuth';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
@@ -32,17 +33,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function AddNewInterview() {
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedMode, setSelectedMode] = useState("Select Mode");
+  const [interviewType, setInterviewType] = useState("Mixed");
   const [selectedDuration, setSelectedDuration] = useState("Select Duration");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [jobPosition, setJobPosition] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [jobExperience, setJobExperience] = useState("");
-  const [location, setLocation] = useState("");
+  const [focusAreas, setFocusAreas] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Pre-fill from the user's profile when the dialog opens.
+  useEffect(() => {
+    if (!openDialog) return;
+    (async () => {
+      const token = await getIdToken();
+      const profile = await getProfile(token);
+      if (profile) {
+        setJobPosition((v) => v || profile.targetRole || "");
+        setFocusAreas((v) => v || profile.focusAreas || "");
+      }
+    })();
+  }, [openDialog]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -50,11 +64,12 @@ function AddNewInterview() {
     const user = auth.currentUser;
     const InputPrompt = `You are an AI Interview Question Generator. Based on the following inputs, generate a structured mock interview.
 
-Job Role: ` + jobPosition + `  
-Job Description: ` + jobDescription + `  
-Years of Experience: ` + jobExperience + `  
-Interview Duration: ` + selectedDuration + `  
-Candidate Location: ` + location + `  
+Job Role: ` + jobPosition + `
+Job Description: ` + jobDescription + `
+Years of Experience: ` + jobExperience + `
+Interview Duration: ` + selectedDuration + `
+Interview Type: ` + interviewType + `
+Focus Areas / Skills to emphasize: ` + (focusAreas || "general fundamentals for the role") + `
 Interview Difficulty: ` + selectedDifficulty + `
 
 ---
@@ -62,20 +77,27 @@ Interview Difficulty: ` + selectedDifficulty + `
 🎯 **Guidelines:**
 
 1. **Question Count by Duration** (total questions):
-   - 15 minutes → 5 questions  
-   - 30 minutes → 7 questions  
-   - 45 minutes → 9 questions  
+   - 15 minutes → 5 questions
+   - 30 minutes → 7 questions
+   - 45 minutes → 9 questions
    - Never create number of questions more than 9.
 
 2. **Question Categories**:
-   - ice_breaker  
-   - basic_skills  
-   - problem_solving  
-   - tech_core  
-   - aptitude  
-   - situational  
+   - ice_breaker
+   - basic_skills
+   - problem_solving
+   - tech_core
+   - aptitude
+   - situational
 
-3. **Difficulty Distribution Rules**:
+3. **Interview Type emphasis**:
+   - **Mixed** → a balanced spread across all categories.
+   - **Technical** → mostly tech_core, problem_solving and basic_skills (role-specific, hands-on); 1 ice_breaker max.
+   - **Behavioral** → mostly situational and ice_breaker (STAR-style "tell me about a time…"); minimal pure tech_core.
+   - **HR** → ice_breaker, situational and motivation/culture-fit questions; keep it non-technical.
+   - Tailor every question to the Focus Areas above where relevant.
+
+4. **Difficulty Distribution Rules**:
    - **Basic** → Focus more on: ice_breaker, basic_skills, aptitude, situational (at least 1 from each).  
    - **Intermediate** → Distribute evenly across all categories; include **1–2 ice_breaker questions**; at least 1 from each other category.  
    - **Advanced** → Focus more on: problem_solving, tech_core, situational; include **1–2 ice_breaker questions**; at least 1 from each other category.  
@@ -121,6 +143,7 @@ Interview Difficulty: ` + selectedDifficulty + `
         jobExperience,
         selectedDifficulty,
         selectedDuration,
+        interviewType,
         createdAt: moment().format('DD-MM-yyyy'),
       }, token);
 
@@ -225,32 +248,32 @@ Interview Difficulty: ` + selectedDifficulty + `
                   </div>
 
                   <div className='my-2'>
-                    <label>Location</label>
-                    <Input required placeholder="Ex. Mumbai, Bangalore" value={location} onChange={(e) => setLocation(e.target.value)} />
+                    <label>Focus Areas / Skills <span className="text-gray-400 text-sm font-normal">(optional — what should we emphasize?)</span></label>
+                    <Input placeholder="Ex. React, system design, DSA, communication" value={focusAreas} onChange={(e) => setFocusAreas(e.target.value)} />
                   </div>
 
                   <div className='flex gap-4 my-2 flex-wrap'>
                     <div className='flex-1 min-w-[140px]'>
-                      <label className="block text-sm font-medium">Select Work Mode</label>
+                      <label className="block text-sm font-medium mb-1">Interview Type</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm">
-                            {selectedMode}
+                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm text-left">
+                            {interviewType}
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          {["Remote", "Online", "Offline", "Hybrid"].map((mode) => (
-                            <DropdownMenuItem key={mode} onClick={() => setSelectedMode(mode)}>{mode}</DropdownMenuItem>
+                          {["Mixed", "Technical", "Behavioral", "HR"].map((t) => (
+                            <DropdownMenuItem key={t} onClick={() => setInterviewType(t)}>{t}</DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
 
                     <div className='flex-1 min-w-[140px]'>
-                      <label className="block text-sm font-medium">Interview Duration</label>
+                      <label className="block text-sm font-medium mb-1">Interview Duration</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm">
+                          <button type="button" className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm text-left">
                             {selectedDuration}
                           </button>
                         </DropdownMenuTrigger>

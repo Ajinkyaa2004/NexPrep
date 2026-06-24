@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Lightbulb, WebcamIcon, ArrowRight } from 'lucide-react';
+import { Lightbulb, WebcamIcon, ArrowRight, ListChecks, Clock, Layers } from 'lucide-react';
 import { getInterviewById } from '../../../actions/interview';
 import { getIdToken } from '../../../../lib/clientAuth';
 import { Button } from '../../../../components/ui/button';
@@ -37,6 +37,22 @@ function InterviewPage() {
     height: 300,
     facingMode: 'user',
   };
+
+  // Parse the generated interview into a human-readable structure preview.
+  const getStructure = () => {
+    try {
+      const parsed = JSON.parse(interviewData.jsonMockResp);
+      const groups = parsed.interview || {};
+      const categories = Object.entries(groups)
+        .map(([name, qs]) => ({ name: name.replace(/_/g, ' '), count: Array.isArray(qs) ? qs.length : 0 }))
+        .filter((c) => c.count > 0);
+      const total = categories.reduce((s, c) => s + c.count, 0);
+      return { total, categories };
+    } catch {
+      return null;
+    }
+  };
+  const structure = interviewData ? getStructure() : null;
 
   return (
     <div className="my-10 px-4 flex flex-col items-center justify-center relative">
@@ -110,6 +126,35 @@ function InterviewPage() {
 
 
               </div>
+
+              {structure && structure.total > 0 && (
+                <div className="bg-white p-5 border rounded-xl shadow-sm w-full">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-1">
+                    <ListChecks className="w-5 h-5 text-blue-600" /> Your interview is ready
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Built from your inputs — {interviewData.interviewType ? <span className="font-medium text-gray-700">{interviewData.interviewType}</span> : 'a tailored'} interview, {interviewData.selectedDifficulty} difficulty.
+                  </p>
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
+                      <ListChecks className="w-4 h-4" /> {structure.total} questions
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
+                      <Clock className="w-4 h-4" /> {interviewData.selectedDuration}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg">
+                      <Layers className="w-4 h-4" /> {structure.categories.length} sections
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {structure.categories.map((c) => (
+                      <span key={c.name} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full capitalize">
+                        {c.name} · {c.count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="w-full flex justify-center md:justify-start mt-4">
                 <Link href={'/dashboard/interview/' + interviewId + '/start'} replace className="w-full md:w-auto">

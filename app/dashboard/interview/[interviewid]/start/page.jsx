@@ -15,6 +15,7 @@ import {
   Loader2,
   PhoneOff,
   Flag,
+  Clock,
 } from 'lucide-react';
 
 const RecordAnswerSection = dynamic(
@@ -27,6 +28,7 @@ function StartInterview() {
   const [mockInterviewQuestion, setMockInterviewQuestion] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(null); // seconds
 
   const params = useParams();
   const router = useRouter();
@@ -45,12 +47,15 @@ function StartInterview() {
       if (result) {
         const jsonMockResp = JSON.parse(result.jsonMockResp);
         if (jsonMockResp && typeof jsonMockResp === 'object') {
+          // Keep each question's category so we can show a relevant hint.
           const allQuestions = Object.entries(jsonMockResp.interview || {}).flatMap(
-            ([, questions]) => questions
+            ([category, questions]) => (Array.isArray(questions) ? questions.map((q) => ({ ...q, category })) : [])
           );
           setMockInterviewQuestion(allQuestions);
         }
         setInterviewData(result);
+        const mins = parseInt((result.selectedDuration || '30').match(/\d+/)?.[0] || '30', 10);
+        setTimeLeft(mins * 60);
       } else {
         setMockInterviewQuestion([]);
       }
@@ -62,10 +67,32 @@ function StartInterview() {
     }
   };
 
+  // Countdown timer for the whole interview.
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) return;
+    const id = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
+    return () => clearInterval(id);
+  }, [timeLeft !== null]);
+
   const totalQuestions = mockInterviewQuestion.length;
   const currentQuestion = mockInterviewQuestion[activeQuestionIndex];
   const isLast = activeQuestionIndex >= totalQuestions - 1;
   const feedbackUrl = `/dashboard/interview/${interviewData?.mockId}/feedback`;
+
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const timeColor = timeLeft === null ? '' : timeLeft <= 30 ? 'text-red-500' : timeLeft <= 120 ? 'text-amber-500' : 'text-gray-600';
+
+  const hintFor = (cat) => {
+    switch (cat) {
+      case 'situational': return 'Use the STAR method — Situation, Task, Action, Result — with a concrete example.';
+      case 'tech_core':
+      case 'problem_solving': return 'Explain your reasoning step by step and mention trade-offs or edge cases.';
+      case 'basic_skills': return 'Define the concept clearly, then back it with a short, concrete example.';
+      case 'aptitude': return 'Think out loud and walk through your working so your logic is visible.';
+      case 'ice_breaker': return 'Keep it concise and authentic — focus on what’s relevant to this role.';
+      default: return 'Structure your answer clearly and support it with a specific example.';
+    }
+  };
 
   const speakQuestion = () => {
     if (!currentQuestion?.question || typeof window === 'undefined') return;
@@ -94,6 +121,11 @@ function StartInterview() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          {timeLeft !== null && (
+            <span className={`hidden sm:flex items-center gap-1.5 text-sm font-semibold tabular-nums ${timeColor}`} title="Time remaining">
+              <Clock className="w-4 h-4" /> {fmtTime(timeLeft)}
+            </span>
+          )}
           {totalQuestions > 0 && (
             <span className="text-xs sm:text-sm font-medium text-gray-500">
               Question {activeQuestionIndex + 1} / {totalQuestions}
@@ -162,7 +194,7 @@ function StartInterview() {
                       <span>AI Hint</span>
                     </div>
                     <p className="opacity-90 leading-relaxed">
-                      Structure your answer using the STAR method (Situation, Task, Action, Result) for best impact.
+                      {hintFor(currentQuestion?.category)}
                     </p>
                   </div>
                 </>

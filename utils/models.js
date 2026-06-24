@@ -45,6 +45,10 @@ const MockInterviewSchema = new mongoose.Schema({
     required: true,
     maxlength: 50,
   },
+  interviewType: {
+    type: String,
+    maxlength: 40,
+  },
 }, {
   timestamps: false,
 });
