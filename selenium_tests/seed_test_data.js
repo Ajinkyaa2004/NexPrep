@@ -5,6 +5,8 @@ import dbConnect from '../utils/mongodb.js';
 import { MockInterview, UserAnswer } from '../utils/models.js';
 
 const MOCK_ID = 'selenium-test-interview';
+// Must match the account the Selenium suite signs in as, so ownership checks pass.
+const OWNER = process.env.SEED_EMAIL || 'selenium.tester@example.com';
 
 async function run() {
   await dbConnect();
@@ -24,7 +26,7 @@ async function run() {
     jobPosition: 'Selenium Test Role',
     jobDescription: 'Automated test interview for the Selenium suite.',
     jobExperience: '2',
-    createdBy: 'demo@gmail.com',
+    createdBy: OWNER,
     createdAt: '22-06-2026',
     selectedDuration: '15 min',
     selectedDifficulty: 'Intermediate',
@@ -39,7 +41,7 @@ async function run() {
       '**Overall Impression**: Clear and concise answer. **Correctness vs Expected Answer**: Aligns well with expectations. **Missing Key Concepts**: Could add a specific achievement. **Final Recommendation**: Moderate',
     strength: 'Good clarity and structure.',
     rating: '7',
-    userEmail: 'demo@gmail.com',
+    userEmail: OWNER,
     createdAt: '22-06-2026',
   });
 

@@ -10,6 +10,7 @@ import {
 import { User, Mail, ShieldCheck, KeyRound, Trash2, Loader2, CheckCircle2, AlertTriangle, LogOut } from 'lucide-react';
 import { auth } from '../../../firebase/client';
 import { deleteUserData } from '../../actions/interview';
+import { getIdToken } from '../../../lib/clientAuth';
 import { Button } from '../../../components/ui/button';
 
 export default function SettingsPage() {
@@ -73,7 +74,8 @@ export default function SettingsPage() {
     if (!window.confirm('Delete your account and all your interviews and feedback? This cannot be undone.')) return;
     try {
       setBusy('delete');
-      await deleteUserData(user.email);
+      const token = await getIdToken();
+      await deleteUserData(token);
       await deleteUser(auth.currentUser);
       toast.success('Your account has been deleted.');
       router.push('/');

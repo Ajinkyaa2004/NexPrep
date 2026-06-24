@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { chatSession } from '../../../../../../utils/GeminiAIModal';
 import { createUserAnswer } from '../../../../../actions/interview';
 import { auth } from '../../../../../../firebase/client';
+import { getIdToken } from '../../../../../../lib/clientAuth';
 import moment from 'moment';
 
 /**
@@ -208,6 +209,7 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
       if (!jsonMatch) throw new Error('No JSON found in AI response');
       const JsonFeedbackResp = JSON.parse(jsonMatch[0]);
 
+      const token = await getIdToken();
       const saveResult = await createUserAnswer({
         mockIdRef: interviewData.mockId,
         question: currentQuestion?.question,
@@ -216,9 +218,8 @@ function RecordAnswerSection({ mockInterviewQuestion, activeQuestionIndex, inter
         feedback: JsonFeedbackResp?.feedback || 'No feedback generated',
         strength: JsonFeedbackResp?.strength || 'N/A',
         rating: String(JsonFeedbackResp?.rating ?? '0'),
-        userEmail: auth.currentUser?.email || 'demo@gmail.com',
         createdAt: moment().format('DD-MM-yyyy'),
-      });
+      }, token);
 
       if (saveResult.success) {
         setSaved(true);

@@ -1,13 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from "../../../../../../components/ui/collapsible";
-import { ChevronsUpDown, CheckCircle, AlertTriangle, Target, Home } from "lucide-react";
+import { ChevronsUpDown, CheckCircle, AlertTriangle, Target, Home, Loader2 } from "lucide-react";
 import { Button } from "../../../../../../components/ui/button";
+import { getFeedbackList } from "../../../../../actions/interview";
+import { getIdToken } from "../../../../../../lib/clientAuth";
 
 /**
  * Renders an AI feedback string (which uses **Header**: body markers) as a clean
@@ -66,7 +68,28 @@ function FeedbackReport({ text }) {
     );
 }
 
-export default function FeedbackClient({ feedbackList }) {
+export default function FeedbackClient({ interviewId }) {
+    const [feedbackList, setFeedbackList] = useState(null); // null = loading
+
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            const token = await getIdToken();
+            const list = await getFeedbackList(interviewId, token);
+            if (active) setFeedbackList(list || []);
+        })();
+        return () => { active = false; };
+    }, [interviewId]);
+
+    if (feedbackList === null) {
+        return (
+            <div className="p-10 min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm text-gray-500">Loading your feedback…</p>
+            </div>
+        );
+    }
+
     // --- Statistics Calculation ---
     const totalQuestions = feedbackList.length;
     const totalRating = feedbackList.reduce((sum, item) => sum + Number(item.rating || 0), 0);

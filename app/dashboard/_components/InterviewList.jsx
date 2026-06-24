@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { getInterviewList } from '../../actions/interview';
 import { auth } from '../../../firebase/client';
+import { getIdToken } from '../../../lib/clientAuth';
 import InterviewItemCard from '../_components/InterviewItemCard';
 
 
@@ -12,16 +13,16 @@ function InterviewList() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        GetInterviewList(user.email);
+        GetInterviewList();
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const GetInterviewList = async (email) => {
-    const result = await getInterviewList(email);
-    console.log(result);
-    setInterviewList(result);
+  const GetInterviewList = async () => {
+    const token = await getIdToken();
+    const result = await getInterviewList(token);
+    setInterviewList(result || []);
   };
 
   return (

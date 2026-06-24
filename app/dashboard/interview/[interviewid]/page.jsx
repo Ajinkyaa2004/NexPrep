@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Lightbulb, WebcamIcon, ArrowRight } from 'lucide-react';
 import { getInterviewById } from '../../../actions/interview';
+import { getIdToken } from '../../../../lib/clientAuth';
 import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -24,7 +25,8 @@ function InterviewPage() {
 
   const getInterviewDetails = async (id) => {
     setLoading(true);
-    const result = await getInterviewById(id);
+    const token = await getIdToken();
+    const result = await getInterviewById(id, token);
 
     setInterviewData(result || null);
     setLoading(false);

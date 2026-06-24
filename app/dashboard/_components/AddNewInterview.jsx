@@ -23,6 +23,7 @@ import { chatSession } from '../../../utils/GeminiAIModal';
 import { LoaderCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { createInterview } from '../../actions/interview';
+import { getIdToken } from '../../../lib/clientAuth';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -111,6 +112,7 @@ Interview Difficulty: ` + selectedDifficulty + `
         throw new Error('The AI did not return any questions. Please try again.');
       }
 
+      const token = await getIdToken();
       const saveResult = await createInterview({
         mockId: uuidv4(),
         jsonMockResp: MockJsonResp,
@@ -119,9 +121,8 @@ Interview Difficulty: ` + selectedDifficulty + `
         jobExperience,
         selectedDifficulty,
         selectedDuration,
-        createdBy: user?.email || 'demo@gmail.com',
         createdAt: moment().format('DD-MM-yyyy'),
-      });
+      }, token);
 
       if (saveResult.success) {
         setOpenDialog(false);

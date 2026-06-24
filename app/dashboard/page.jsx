@@ -6,6 +6,7 @@ import { UserCheck, Zap, TrendingUp, Clock, Activity, Award, ArrowUpRight, Arrow
 
 import { auth } from '../../firebase/client';
 import { getDashboardStats } from '../actions/interview';
+import { getIdToken } from '../../lib/clientAuth';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -36,10 +37,9 @@ function Dashboard() {
 
   const GetDashboardStats = async () => {
     setLoading(true);
-    const email = user?.email; // AuthGuard guarantees a signed-in user here.
-
     try {
-      const { interviews, answers } = await getDashboardStats(email);
+      const token = await getIdToken();
+      const { interviews, answers } = await getDashboardStats(token);
 
       const totalInt = interviews.length;
       const totalQ = answers.length;

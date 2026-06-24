@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getInterviewById } from '../../../../actions/interview';
+import { getIdToken } from '../../../../../lib/clientAuth';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Button } from '../../../../../components/ui/button';
@@ -39,7 +40,8 @@ function StartInterview() {
   const getInterviewDetails = async (id) => {
     try {
       setLoading(true);
-      const result = await getInterviewById(id);
+      const token = await getIdToken();
+      const result = await getInterviewById(id, token);
       if (result) {
         const jsonMockResp = JSON.parse(result.jsonMockResp);
         if (jsonMockResp && typeof jsonMockResp === 'object') {
