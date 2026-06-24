@@ -517,6 +517,51 @@ def test_feedback(d):
         record(g, "feedback", False, str(e)[:120])
 
 
+def test_cohorts(d):
+    g = "Cohorts"
+    try:
+        d.get(BASE + "/dashboard/cohorts")
+        WebDriverWait(d, 12).until(lambda x: "cohorts" in body_text(x).lower())
+        time.sleep(1)
+        record(g, "page loads", "cohorts" in body_text(d).lower())
+        record(g, "Create cohort button", find_btn_by_text(d, "Create cohort") is not None)
+        record(g, "Join with code button", find_btn_by_text(d, "Join with code") is not None)
+
+        # Create a cohort
+        find_btn_by_text(d, "Create cohort").click()
+        time.sleep(1.2)
+        name_inputs = [i for i in d.find_elements(By.CSS_SELECTOR, "input")
+                       if "batch" in (i.get_attribute("placeholder") or "").lower()]
+        if name_inputs:
+            name_inputs[0].send_keys("Selenium Suite Cohort")
+            create_btns = [b for b in d.find_elements(By.TAG_NAME, "button") if "create cohort" in (b.text or "").lower()]
+            d.execute_script("arguments[0].click();", create_btns[-1])
+            ok = False
+            try:
+                WebDriverWait(d, 12).until(lambda x: "Selenium Suite Cohort" in body_text(x))
+                ok = True
+            except TimeoutException:
+                ok = "Selenium Suite Cohort" in body_text(d)
+            record(g, "create cohort appears in Teaching", ok)
+
+            # Open its detail (View) and confirm roster section
+            view = None
+            for a in d.find_elements(By.TAG_NAME, "button") + d.find_elements(By.TAG_NAME, "a"):
+                if (a.text or "").strip().lower().startswith("view"):
+                    view = a; break
+            if view:
+                d.execute_script("arguments[0].click();", view)
+                try:
+                    WebDriverWait(d, 10).until(lambda x: "student progress" in body_text(x).lower())
+                    record(g, "cohort detail shows roster", True)
+                except TimeoutException:
+                    record(g, "cohort detail shows roster", "student progress" in body_text(d).lower())
+        else:
+            record(g, "create cohort appears in Teaching", False, "modal name input not found")
+    except Exception as e:
+        record(g, "cohorts flow", False, str(e)[:120])
+
+
 def test_console_errors(d, pages):
     """Check for severe browser console errors on the given pages."""
     g = "ConsoleErrors"
@@ -576,6 +621,7 @@ def main():
             test_interview_detail(d)
             test_interview_start(d)
             test_feedback(d)
+            test_cohorts(d)
             test_console_errors(d, ["/dashboard", "/dashboard/resume",
                                     "/dashboard/ats-checker",
                                     f"/dashboard/interview/{TEST_MOCK_ID}/start"])

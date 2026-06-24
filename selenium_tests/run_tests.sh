@@ -32,6 +32,7 @@ echo "▶ Cleaning up test data ..."
 mongosh "$MONGODB_URI" --quiet --eval '
   db.mockinterviews.deleteMany({mockId:"selenium-test-interview"});
   db.useranswers.deleteMany({mockIdRef:"selenium-test-interview"});
+  db.cohorts.deleteMany({name:"Selenium Suite Cohort"});
 ' >/dev/null 2>&1 || true
 
 exit $STATUS

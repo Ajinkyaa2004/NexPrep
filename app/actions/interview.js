@@ -27,12 +27,16 @@ export async function createInterview(data, idToken) {
   }
 }
 
-export async function getInterviewList(idToken) {
+export async function getInterviewList(idToken, { limit = 30, skip = 0 } = {}) {
   try {
     const email = await verifiedEmail(idToken);
     if (!email) return [];
     await dbConnect();
-    const interviews = await MockInterview.find({ createdBy: email }).sort({ _id: -1 }).lean();
+    const interviews = await MockInterview.find({ createdBy: email })
+      .sort({ _id: -1 })
+      .skip(Math.max(0, skip))
+      .limit(Math.min(100, Math.max(1, limit)))
+      .lean();
     return JSON.parse(JSON.stringify(interviews));
   } catch (error) {
     console.error('Error fetching interviews:', error);
