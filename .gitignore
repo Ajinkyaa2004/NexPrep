@@ -50,3 +50,7 @@ next-env.d.ts
 # Local tooling & backups
 .claude/
 *.backup
+# Cloudflare build output
+.open-next/
+.wrangler/
+.dev.vars

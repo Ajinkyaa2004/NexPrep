@@ -9,7 +9,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nexprepai.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nexprep.ajinkyadhumal.com";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),

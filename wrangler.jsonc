@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexprep",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "images": {
+    "binding": "IMAGES"
+  },
+  "services": [
+    { "binding": "WORKER_SELF_REFERENCE", "service": "nexprep" }
+  ],
+  "minify": true,
+  "workers_dev": true,
+  "routes": [{ "pattern": "nexprep.ajinkyadhumal.com", "custom_domain": true }],
+  "observability": { "enabled": true }
+}
